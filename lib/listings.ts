@@ -24,7 +24,7 @@ export const listings: Listing[] = [
     title: "Mini fridge",
     type: "For Sale",
     price: "$55",
-    campus: "North Quad",
+    campus: "Fordham",
     description:
       "Compact black mini fridge with a small freezer shelf. Clean, quiet, and ready for pickup before move-out.",
     image: "/listings/mini-fridge.svg",
@@ -32,7 +32,7 @@ export const listings: Listing[] = [
     createdAt: "2026-05-29T12:00:00.000Z",
     seller: {
       name: "Maya Chen",
-      dorm: "North Quad",
+      dorm: "Fordham",
       year: "Sophomore"
     }
   },
@@ -42,7 +42,7 @@ export const listings: Listing[] = [
     title: "Desk lamp",
     type: "Free",
     price: "$0",
-    campus: "West Hall",
+    campus: "NYU",
     description:
       "Adjustable LED desk lamp with three brightness settings. Works well for late study sessions.",
     image: "/listings/desk-lamp.svg",
@@ -50,7 +50,7 @@ export const listings: Listing[] = [
     createdAt: "2026-05-28T12:00:00.000Z",
     seller: {
       name: "Jordan Ellis",
-      dorm: "West Hall",
+      dorm: "NYU",
       year: "Junior"
     }
   },
@@ -60,7 +60,7 @@ export const listings: Listing[] = [
     title: "Textbooks",
     type: "For Sale",
     price: "$30",
-    campus: "Main Library",
+    campus: "Columbia",
     description:
       "Intro economics and biology textbooks from this semester. Light highlighting, no missing pages.",
     image: "/listings/textbooks.svg",
@@ -78,7 +78,7 @@ export const listings: Listing[] = [
     title: "Storage bins",
     type: "Wanted",
     price: "Any",
-    campus: "East Campus",
+    campus: "St. John's",
     description:
       "Looking for stackable bins or under-bed storage before move-in weekend. Flexible on pickup.",
     image: "/listings/storage-bins.svg",
@@ -86,7 +86,7 @@ export const listings: Listing[] = [
     createdAt: "2026-05-26T12:00:00.000Z",
     seller: {
       name: "Sam Rivera",
-      dorm: "East Campus",
+      dorm: "St. John's",
       year: "Senior"
     }
   },
@@ -96,7 +96,7 @@ export const listings: Listing[] = [
     title: "Microwave",
     type: "For Sale",
     price: "$40",
-    campus: "South Village",
+    campus: "Boston College",
     description:
       "Dorm-size microwave with simple controls. Fits on a small cart or shared suite counter.",
     image: "/listings/microwave.svg",
@@ -104,7 +104,7 @@ export const listings: Listing[] = [
     createdAt: "2026-05-24T12:00:00.000Z",
     seller: {
       name: "Nina Brooks",
-      dorm: "South Village",
+      dorm: "Boston College",
       year: "Senior"
     }
   },
@@ -114,7 +114,7 @@ export const listings: Listing[] = [
     title: "Dorm chair",
     type: "Free",
     price: "$0",
-    campus: "Baker House",
+    campus: "Other",
     description:
       "Lightweight saucer chair for a dorm corner. A little worn, still comfy and easy to carry.",
     image: "/listings/dorm-chair.svg",
@@ -122,7 +122,7 @@ export const listings: Listing[] = [
     createdAt: "2026-05-20T12:00:00.000Z",
     seller: {
       name: "Leo Martin",
-      dorm: "Baker House",
+      dorm: "Other",
       year: "Sophomore"
     }
   }

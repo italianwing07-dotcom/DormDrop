@@ -5,16 +5,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import type { User } from "@supabase/supabase-js";
 import { getBrowserSupabaseClient } from "@/lib/supabase/browser-client";
+import { campusOptions } from "@/lib/campuses";
 import type { ListingCategory } from "@/lib/supabase/types";
-
-const campusOptions = [
-  "North Quad",
-  "West Hall",
-  "East Campus",
-  "South Village",
-  "Baker House",
-  "Main Library"
-];
 
 const placeholderImages: Record<ListingCategory, string> = {
   Free: "/listings/dorm-chair.svg",
@@ -158,7 +150,7 @@ export function CreateListingForm() {
         description: String(formData.get("description") ?? "").trim(),
         price: String(formData.get("price") ?? "").trim(),
         category,
-        campus: String(formData.get("campus") ?? ""),
+        campus: String(formData.get("campus") ?? "").trim(),
         image_url: imageUrl,
         seller_email: currentUser.email ?? null,
         sold: false
@@ -278,11 +270,17 @@ export function CreateListingForm() {
           <span className="text-sm font-semibold">Campus</span>
           <select
             className="min-h-12 w-full rounded-2xl border border-campus-ink/15 bg-white px-4 outline-none transition focus:border-campus-green focus:ring-4 focus:ring-campus-green/10"
+            defaultValue=""
             name="campus"
             required
           >
+            <option disabled value="">
+              Choose campus
+            </option>
             {campusOptions.map((campus) => (
-              <option key={campus}>{campus}</option>
+              <option key={campus} value={campus}>
+                {campus}
+              </option>
             ))}
           </select>
         </label>

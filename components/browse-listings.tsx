@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { ListingCard } from "@/components/listing-card";
+import { getCampusFilterOptions, getCampusFilterValue } from "@/lib/campuses";
 import type { Listing } from "@/lib/listings";
 
 type CategoryFilter = "All" | Listing["type"];
@@ -18,7 +19,10 @@ const filterStyles: Record<CategoryFilter, string> = {
 export function BrowseListings({ listings }: { listings: Listing[] }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeFilter, setActiveFilter] = useState<CategoryFilter>("All");
+  const [activeCampusFilter, setActiveCampusFilter] = useState("All");
   const [includeSold, setIncludeSold] = useState(false);
+
+  const campusFilters = useMemo(() => getCampusFilterOptions(), []);
 
   const filteredListings = useMemo(() => {
     const normalizedSearchTerm = searchTerm.trim().toLowerCase();
@@ -27,13 +31,16 @@ export function BrowseListings({ listings }: { listings: Listing[] }) {
       const matchesSold = includeSold || !listing.sold;
       const matchesCategory =
         activeFilter === "All" || listing.type === activeFilter;
+      const matchesCampus =
+        activeCampusFilter === "All" ||
+        getCampusFilterValue(listing.campus) === activeCampusFilter;
       const searchableText = `${listing.title} ${listing.description}`.toLowerCase();
       const matchesSearch =
         !normalizedSearchTerm || searchableText.includes(normalizedSearchTerm);
 
-      return matchesSold && matchesCategory && matchesSearch;
+      return matchesSold && matchesCategory && matchesCampus && matchesSearch;
     });
-  }, [activeFilter, includeSold, listings, searchTerm]);
+  }, [activeCampusFilter, activeFilter, includeSold, listings, searchTerm]);
 
   return (
     <>
@@ -47,6 +54,32 @@ export function BrowseListings({ listings }: { listings: Listing[] }) {
           value={searchTerm}
         />
       </label>
+      <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-center">
+        <label className="block">
+          <span className="sr-only">Filter by campus</span>
+          <select
+            className="min-h-11 w-full rounded-full border border-campus-ink/10 bg-white px-5 text-sm font-bold text-campus-ink shadow-sm outline-none transition focus:border-campus-green focus:ring-4 focus:ring-campus-green/10 sm:max-w-xs"
+            onChange={(event) => setActiveCampusFilter(event.target.value)}
+            value={activeCampusFilter}
+          >
+            <option value="All">All campuses</option>
+            {campusFilters.map((campus) => (
+              <option key={campus} value={campus}>
+                {campus}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="flex min-h-11 w-fit items-center gap-3 rounded-full bg-white px-5 text-sm font-bold text-campus-ink shadow-sm sm:justify-self-end">
+          <input
+            checked={includeSold}
+            className="size-4 accent-campus-green"
+            onChange={(event) => setIncludeSold(event.target.checked)}
+            type="checkbox"
+          />
+          Include sold
+        </label>
+      </div>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex gap-2 overflow-x-auto pb-1">
           {filters.map((filter) => {
@@ -66,15 +99,6 @@ export function BrowseListings({ listings }: { listings: Listing[] }) {
             );
           })}
         </div>
-        <label className="flex min-h-11 w-fit items-center gap-3 rounded-full bg-white px-5 text-sm font-bold text-campus-ink shadow-sm">
-          <input
-            checked={includeSold}
-            className="size-4 accent-campus-green"
-            onChange={(event) => setIncludeSold(event.target.checked)}
-            type="checkbox"
-          />
-          Include sold
-        </label>
       </div>
       <p className="text-sm font-semibold text-campus-ink/60">
         {filteredListings.length} matching{" "}

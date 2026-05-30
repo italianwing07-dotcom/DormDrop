@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ListingCard } from "@/components/listing-card";
 import { ListingCardSkeleton } from "@/components/listing-card-skeleton";
+import { getCampusFilterOptions, getCampusFilterValue } from "@/lib/campuses";
 import { mapListingRow } from "@/lib/supabase/listings";
 import { getBrowserSupabaseClient } from "@/lib/supabase/browser-client";
 import type { ListingRow } from "@/lib/supabase/types";
@@ -13,6 +14,7 @@ export function ProfileContent() {
   const [user, setUser] = useState<User | null>(null);
   const [userListings, setUserListings] = useState<ListingRow[]>([]);
   const [savedCount, setSavedCount] = useState(0);
+  const [activeCampusFilter, setActiveCampusFilter] = useState("All");
   const [deletingListingId, setDeletingListingId] = useState<string | null>(null);
   const [updatingSoldListingId, setUpdatingSoldListingId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -199,11 +201,18 @@ export function ProfileContent() {
 
   const initials = user.email?.slice(0, 2).toUpperCase() ?? "DD";
   const listingCount = userListings.length;
+  const campusFilters = getCampusFilterOptions();
+  const filteredUserListings =
+    activeCampusFilter === "All"
+      ? userListings
+      : userListings.filter(
+          (listing) => getCampusFilterValue(listing.campus) === activeCampusFilter
+        );
   const wantedCount = userListings.filter(
     (listing) => listing.category === "Wanted"
   ).length;
-  const hasUserListings = listingCount > 0;
-  const showEmptyState = !isLoading && listingCount === 0;
+  const hasUserListings = filteredUserListings.length > 0;
+  const showEmptyState = !isLoading && filteredUserListings.length === 0;
 
   return (
     <main className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
@@ -254,9 +263,26 @@ export function ProfileContent() {
         </div>
 
         <div className="space-y-4">
-          <div>
-            <p className="text-sm font-semibold text-campus-green">My listings</p>
-            <h2 className="mt-1 text-2xl font-bold tracking-tight">Current posts</h2>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-sm font-semibold text-campus-green">My listings</p>
+              <h2 className="mt-1 text-2xl font-bold tracking-tight">Current posts</h2>
+            </div>
+            <label className="block sm:w-56">
+              <span className="sr-only">Filter profile listings by campus</span>
+              <select
+                className="min-h-11 w-full rounded-full border border-campus-ink/10 bg-white px-5 text-sm font-bold text-campus-ink shadow-sm outline-none transition focus:border-campus-green focus:ring-4 focus:ring-campus-green/10"
+                onChange={(event) => setActiveCampusFilter(event.target.value)}
+                value={activeCampusFilter}
+              >
+                <option value="All">All campuses</option>
+                {campusFilters.map((campus) => (
+                  <option key={campus} value={campus}>
+                    {campus}
+                  </option>
+                ))}
+              </select>
+            </label>
           </div>
           {deleteError ? (
             <div className="rounded-2xl bg-campus-coral/10 p-4 text-sm font-medium leading-6 text-campus-ink">
@@ -265,7 +291,7 @@ export function ProfileContent() {
           ) : null}
           {hasUserListings ? (
             <div className="grid gap-4 sm:grid-cols-2">
-              {userListings.map((sourceListing) => {
+              {filteredUserListings.map((sourceListing) => {
                 const listing = mapListingRow(sourceListing);
                 const isDeleting = deletingListingId === listing.id;
                 const isUpdatingSold = updatingSoldListingId === listing.id;
@@ -308,9 +334,13 @@ export function ProfileContent() {
           {showEmptyState ? (
             <div className="rounded-3xl border border-campus-ink/10 bg-white p-8 text-center shadow-soft">
               <p className="text-sm font-semibold text-campus-green">No listings yet</p>
-              <h3 className="mt-2 text-xl font-bold tracking-tight">Your posts will appear here.</h3>
+              <h3 className="mt-2 text-xl font-bold tracking-tight">{activeCampusFilter === "All"
+                ? "Your posts will appear here."
+                : `No ${activeCampusFilter} posts yet.`}</h3>
               <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-campus-ink/60">
-                Create your first listing and it will appear here.
+                {activeCampusFilter === "All"
+                  ? "Create your first listing and it will appear here."
+                  : "Switch campuses or create a new listing for this campus."}
               </p>
               <Link
                 className="mt-5 inline-flex min-h-12 items-center rounded-full bg-campus-green px-6 text-sm font-semibold text-white transition hover:bg-campus-ink"

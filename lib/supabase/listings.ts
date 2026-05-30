@@ -1,3 +1,4 @@
+import { getCampusDisplayName } from "@/lib/campuses";
 import type { Listing } from "@/lib/listings";
 import { getBrowserSupabaseClient } from "@/lib/supabase/browser-client";
 import { supabase } from "@/lib/supabase/client";
@@ -17,14 +18,14 @@ export function mapListingRow(row: ListingRow): Listing {
     title: row.title,
     type,
     price: row.price || "$0",
-    campus: row.campus,
+    campus: getCampusDisplayName(row.campus),
     description: row.description,
     image: row.image_url || fallbackImage,
     sold: row.sold ?? false,
     createdAt: row.created_at,
     seller: {
       name: "DormDrop Student",
-      dorm: row.campus,
+      dorm: getCampusDisplayName(row.campus),
       year: "Student",
       email: row.seller_email
     }

@@ -4,17 +4,9 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { getBrowserSupabaseClient } from "@/lib/supabase/browser-client";
+import { getCampusSelectOptions, getCampusSelectValue } from "@/lib/campuses";
 import type { ListingCategory, ListingRow } from "@/lib/supabase/types";
 import type { User } from "@supabase/supabase-js";
-
-const campusOptions = [
-  "North Quad",
-  "West Hall",
-  "East Campus",
-  "South Village",
-  "Baker House",
-  "Main Library"
-];
 
 const categoryOptions: ListingCategory[] = ["Free", "For Sale", "Wanted"];
 
@@ -156,7 +148,7 @@ export default function EditListingPage() {
         description: String(formData.get("description") ?? "").trim(),
         price: String(formData.get("price") ?? "").trim(),
         category,
-        campus: String(formData.get("campus") ?? ""),
+        campus: String(formData.get("campus") ?? "").trim(),
         image_url: imageUrl,
         seller_email: user.email ?? listing.seller_email
       };
@@ -295,12 +287,14 @@ export default function EditListingPage() {
               <span className="text-sm font-semibold">Campus</span>
               <select
                 className="min-h-12 w-full rounded-2xl border border-campus-ink/15 bg-white px-4 outline-none transition focus:border-campus-green focus:ring-4 focus:ring-campus-green/10"
-                defaultValue={listing.campus}
+                defaultValue={getCampusSelectValue(listing.campus)}
                 name="campus"
                 required
               >
-                {campusOptions.map((campus) => (
-                  <option key={campus}>{campus}</option>
+                {getCampusSelectOptions().map((campus) => (
+                  <option key={campus} value={campus}>
+                    {campus}
+                  </option>
                 ))}
               </select>
             </label>

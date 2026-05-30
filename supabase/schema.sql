@@ -129,7 +129,7 @@ values
     'Compact black mini fridge with a small freezer shelf. Clean, quiet, and ready for pickup before move-out.',
     '$55',
     'For Sale',
-    'North Quad',
+    'Fordham',
     '/listings/mini-fridge.svg'
   ),
   (
@@ -137,7 +137,7 @@ values
     'Adjustable LED desk lamp with three brightness settings. Works well for late study sessions.',
     '$0',
     'Free',
-    'West Hall',
+    'NYU',
     '/listings/desk-lamp.svg'
   ),
   (
@@ -145,7 +145,7 @@ values
     'Intro economics and biology textbooks from this semester. Light highlighting, no missing pages.',
     '$30',
     'For Sale',
-    'Main Library',
+    'Columbia',
     '/listings/textbooks.svg'
   ),
   (
@@ -153,7 +153,7 @@ values
     'Looking for stackable bins or under-bed storage before move-in weekend. Flexible on pickup.',
     'Any',
     'Wanted',
-    'East Campus',
+    'St. John''s',
     '/listings/storage-bins.svg'
   ),
   (
@@ -161,7 +161,7 @@ values
     'Dorm-size microwave with simple controls. Fits on a small cart or shared suite counter.',
     '$40',
     'For Sale',
-    'South Village',
+    'Boston College',
     '/listings/microwave.svg'
   ),
   (
@@ -169,6 +169,6 @@ values
     'Lightweight saucer chair for a dorm corner. A little worn, still comfy and easy to carry.',
     '$0',
     'Free',
-    'Baker House',
+    'Other',
     '/listings/dorm-chair.svg'
   );
