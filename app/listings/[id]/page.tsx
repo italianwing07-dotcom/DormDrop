@@ -1,7 +1,8 @@
-import Image from "next/image";
 import Link from "next/link";
 import { ContactSellerActions } from "@/components/contact-seller-actions";
 import { SaveListingButton } from "@/components/save-listing-button";
+import { MessageSellerButton } from "@/components/message-seller-button";
+import { ListingImageGallery } from "@/components/listing-image-gallery";
 import { formatPostedDate } from "@/lib/format-date";
 import type { Listing } from "@/lib/listings";
 import { getListing } from "@/lib/supabase/listings";
@@ -62,15 +63,7 @@ export default async function ListingDetailsPage({ params }: ListingDetailsPageP
       </Link>
 
       <section className="mt-5 grid gap-5 lg:grid-cols-[1.1fr_0.9fr] lg:gap-6">
-        <div className="overflow-hidden rounded-3xl border border-campus-ink/10 bg-white shadow-soft">
-          <Image
-            alt={listing.title}
-            className="aspect-[4/3] w-full object-cover"
-            height={480}
-            src={listing.image}
-            width={640}
-          />
-        </div>
+        <ListingImageGallery images={listing.images} title={listing.title} />
 
         <div className="space-y-5">
           <div className="rounded-3xl border border-campus-ink/10 bg-white p-5 shadow-soft sm:p-6">
@@ -104,6 +97,11 @@ export default async function ListingDetailsPage({ params }: ListingDetailsPageP
               {listing.description}
             </p>
             <SaveListingButton listingId={listing.id} />
+            <MessageSellerButton
+              listingId={listing.id}
+              listingTitle={listing.title}
+              sellerId={listing.ownerId}
+            />
           </div>
 
           <div className="rounded-3xl border border-campus-ink/10 bg-white p-5 shadow-soft sm:p-6">

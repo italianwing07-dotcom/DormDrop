@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { LogoutButton } from "@/components/logout-button";
+import { InboxNavLink } from "@/components/inbox-nav-link";
 
 const links = [
   { href: "/browse", label: "Browse" },
@@ -27,6 +28,7 @@ export function Navbar() {
               {link.label}
             </Link>
           ))}
+          <InboxNavLink />
           <LogoutButton />
         </div>
       </nav>

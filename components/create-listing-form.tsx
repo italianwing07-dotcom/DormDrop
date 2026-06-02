@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import type { User } from "@supabase/supabase-js";
 import { getBrowserSupabaseClient } from "@/lib/supabase/browser-client";
@@ -14,6 +14,58 @@ const placeholderImages: Record<ListingCategory, string> = {
   Wanted: "/listings/storage-bins.svg"
 };
 
+const supportedImageTypes = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/gif"
+];
+const supportedImageExtensions = ["jpg", "jpeg", "png", "webp", "gif"];
+const unsupportedHeicMessage =
+  "HEIC photos are not supported yet. Please upload JPG, PNG, WEBP, or GIF.";
+
+type PhotoItem =
+  | { id: string; type: "existing"; url: string }
+  | { id: string; type: "new"; file: File; previewUrl: string };
+
+function isSupportedImageFile(file: File) {
+  const extension = file.name.split(".").pop()?.toLowerCase() ?? "";
+  const hasSupportedExtension = supportedImageExtensions.includes(extension);
+  const hasSupportedType = !file.type || supportedImageTypes.includes(file.type);
+
+  return hasSupportedExtension && hasSupportedType;
+}
+
+function hasUnsupportedHeicFile(files: File[]) {
+  return files.some((file) => {
+    const extension = file.name.split(".").pop()?.toLowerCase() ?? "";
+
+    return (
+      extension === "heic" ||
+      extension === "heif" ||
+      file.type === "image/heic" ||
+      file.type === "image/heif"
+    );
+  });
+}
+
+function moveArrayItem<T>(items: T[], fromIndex: number, toIndex: number) {
+  if (toIndex < 0 || toIndex >= items.length) {
+    return items;
+  }
+
+  const reorderedItems = [...items];
+  const [movedItem] = reorderedItems.splice(fromIndex, 1);
+
+  if (!movedItem) {
+    return items;
+  }
+
+  reorderedItems.splice(toIndex, 0, movedItem);
+
+  return reorderedItems;
+}
+
 function getSafeFileName(file: File) {
   const extension = file.name.split(".").pop()?.toLowerCase() || "jpg";
   const baseName = file.name
@@ -23,7 +75,22 @@ function getSafeFileName(file: File) {
     .replace(/(^-|-$)/g, "")
     .slice(0, 40);
 
-  return `${baseName || "listing-image"}.${extension}`;
+  return (baseName || "listing-image") + "." + extension;
+}
+
+function makeNewPhoto(file: File): PhotoItem {
+  return {
+    id: crypto.randomUUID(),
+    type: "new",
+    file,
+    previewUrl: URL.createObjectURL(file)
+  };
+}
+
+function revokePhotoPreview(photo: PhotoItem) {
+  if (photo.type === "new") {
+    URL.revokeObjectURL(photo.previewUrl);
+  }
 }
 
 export function CreateListingForm() {
@@ -32,10 +99,21 @@ export function CreateListingForm() {
   const [isCheckingUser, setIsCheckingUser] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
-  const [selectedImage, setSelectedImage] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [photos, setPhotos] = useState<PhotoItem[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const imageInputRef = useRef<HTMLInputElement | null>(null);
+  const photosRef = useRef<PhotoItem[]>([]);
+
+  useEffect(() => {
+    photosRef.current = photos;
+  }, [photos]);
+
+  useEffect(() => {
+    return () => {
+      photosRef.current.forEach(revokePhotoPreview);
+    };
+  }, []);
 
   useEffect(() => {
     const supabase = getBrowserSupabaseClient();
@@ -58,24 +136,63 @@ export function CreateListingForm() {
       });
   }, []);
 
-  useEffect(() => {
-    if (!selectedImage) {
-      setPreviewUrl(null);
+  function handleImageChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(event.target.files ?? []);
+    setUploadError(null);
+
+    if (hasUnsupportedHeicFile(files)) {
+      event.target.value = "";
+      setUploadError(unsupportedHeicMessage);
       return;
     }
 
-    const objectUrl = URL.createObjectURL(selectedImage);
-    setPreviewUrl(objectUrl);
+    const unsupportedFile = files.find((file) => !isSupportedImageFile(file));
 
-    return () => {
-      URL.revokeObjectURL(objectUrl);
-    };
-  }, [selectedImage]);
+    if (unsupportedFile) {
+      event.target.value = "";
+      setUploadError("Please upload JPG, PNG, WEBP, or GIF images only.");
+      return;
+    }
 
-  function handleImageChange(event: React.ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0] ?? null;
+    setPhotos((currentPhotos) => {
+      const availableSlots = Math.max(0, 5 - currentPhotos.length);
+
+      if (availableSlots === 0) {
+        setUploadError("You can upload up to 5 photos. Remove a photo before adding another.");
+        return currentPhotos;
+      }
+
+      const filesToAdd = files.slice(0, availableSlots);
+
+      if (filesToAdd.length < files.length) {
+        setUploadError("You can upload up to 5 photos. Only the first available slots were added.");
+      }
+
+      return [...currentPhotos, ...filesToAdd.map(makeNewPhoto)];
+    });
+    event.target.value = "";
+  }
+
+  function handleRemovePhoto(photoId: string) {
+    setPhotos((currentPhotos) => {
+      const photoToRemove = currentPhotos.find((photo) => photo.id === photoId);
+
+      if (photoToRemove) {
+        revokePhotoPreview(photoToRemove);
+      }
+
+      return currentPhotos.filter((photo) => photo.id !== photoId);
+    });
     setUploadError(null);
-    setSelectedImage(file);
+  }
+
+  function handleMovePhoto(photoId: string, direction: -1 | 1) {
+    setPhotos((currentPhotos) => {
+      const currentIndex = currentPhotos.findIndex((photo) => photo.id === photoId);
+
+      return moveArrayItem(currentPhotos, currentIndex, currentIndex + direction);
+    });
+    setUploadError(null);
   }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -105,45 +222,56 @@ export function CreateListingForm() {
 
       const formData = new FormData(form);
       const category = formData.get("category") as ListingCategory;
-      const imageFile = formData.get("image");
-      let imageUrl = placeholderImages[category];
+      let finalImageUrls: string[] = [];
 
-      if (imageFile instanceof File && imageFile.size > 0) {
-        const filePath = `${currentUser.id}/${crypto.randomUUID()}-${getSafeFileName(imageFile)}`;
+      if (photos.length > 0) {
         setIsUploadingImage(true);
         try {
-          const { error: uploadError } = await supabase.storage
-            .from("listing-images")
-            .upload(filePath, imageFile, {
-              cacheControl: "3600",
-              upsert: false
-            });
+          for (const photo of photos) {
+            if (photo.type === "existing") {
+              finalImageUrls.push(photo.url);
+              continue;
+            }
 
-          if (uploadError) {
-            const uploadMessage = JSON.stringify(
-              {
-                message: uploadError.message,
-                name: uploadError.name
-              },
-              null,
-              2
-            );
+            const filePath = currentUser.id + "/" + crypto.randomUUID() + "-" + getSafeFileName(photo.file);
+            const { error: uploadError } = await supabase.storage
+              .from("listing-images")
+              .upload(filePath, photo.file, {
+                cacheControl: "3600",
+                upsert: false
+              });
 
-            console.error("[DormDrop] Supabase Storage upload failed", uploadError);
-            setUploadError(uploadMessage);
-            throw new Error(uploadMessage);
+            if (uploadError) {
+              const uploadMessage = JSON.stringify(
+                {
+                  message: uploadError.message,
+                  name: uploadError.name
+                },
+                null,
+                2
+              );
+
+              console.error("[DormDrop] Supabase Storage upload failed", uploadError);
+              setUploadError(uploadMessage);
+              throw new Error(uploadMessage);
+            }
+
+            const { data } = supabase.storage
+              .from("listing-images")
+              .getPublicUrl(filePath);
+
+            finalImageUrls.push(data.publicUrl);
           }
-
-          const { data } = supabase.storage
-            .from("listing-images")
-            .getPublicUrl(filePath);
-
-          imageUrl = data.publicUrl;
         } finally {
           setIsUploadingImage(false);
         }
       }
 
+      if (finalImageUrls.length === 0) {
+        finalImageUrls = [placeholderImages[category]];
+      }
+
+      const imageUrl = finalImageUrls[0] ?? placeholderImages[category];
       const payload = {
         user_id: currentUser.id,
         title: String(formData.get("title") ?? "").trim(),
@@ -152,6 +280,7 @@ export function CreateListingForm() {
         category,
         campus: String(formData.get("campus") ?? "").trim(),
         image_url: imageUrl,
+        image_urls: finalImageUrls,
         seller_email: currentUser.email ?? null,
         sold: false
       };
@@ -224,22 +353,80 @@ export function CreateListingForm() {
       className="space-y-5 rounded-3xl border border-campus-ink/10 bg-white p-5 shadow-soft sm:p-6"
       onSubmit={handleSubmit}
     >
-      <label className="flex min-h-44 cursor-pointer flex-col items-center justify-center rounded-3xl border-2 border-dashed border-campus-ink/15 bg-campus-paper p-6 text-center transition hover:border-campus-green hover:bg-campus-mint/60">
+      <div className="flex min-h-44 flex-col items-center justify-center rounded-3xl border-2 border-dashed border-campus-ink/15 bg-campus-paper p-6 text-center transition hover:border-campus-green hover:bg-campus-mint/60">
         <span className="text-sm font-bold text-campus-ink">Image upload placeholder</span>
         <span className="mt-2 max-w-sm text-sm leading-6 text-campus-ink/60">
-          Upload a dorm item photo, or leave this empty to use a category placeholder.
+          Upload up to 5 dorm item photos, or leave this empty to use a category placeholder.
         </span>
-        {selectedImage ? (
-          <span className="mt-3 text-sm font-semibold text-campus-green">
-            Selected: {selectedImage.name}
-          </span>
-        ) : null}
-        {previewUrl ? (
-          <img
-            alt="Selected listing preview"
-            className="mt-4 aspect-[4/3] w-full max-w-xs rounded-2xl object-cover"
-            src={previewUrl}
-          />
+        <button
+          className="mt-4 rounded-full bg-white px-4 py-2 text-sm font-bold text-campus-ink shadow-sm transition hover:bg-campus-mint disabled:cursor-not-allowed disabled:opacity-60"
+          disabled={photos.length >= 5}
+          onClick={() => imageInputRef.current?.click()}
+          type="button"
+        >
+          Choose photos
+        </button>
+        <span className="mt-3 text-sm font-semibold text-campus-green">
+          {photos.length}/5 selected
+        </span>
+        {photos.length > 0 ? (
+          <div className="mt-4 grid w-full max-w-xl grid-cols-2 gap-3 sm:grid-cols-3">
+            {photos.map((photo, index) => {
+              const imageUrl = photo.type === "existing" ? photo.url : photo.previewUrl;
+
+              return (
+                <div className="relative overflow-hidden rounded-2xl" key={photo.id}>
+                  <img
+                    alt={"Selected listing preview " + (index + 1)}
+                    className="aspect-[4/3] w-full object-cover"
+                    src={imageUrl}
+                  />
+                  <div className="absolute inset-x-2 top-2 flex flex-wrap justify-end gap-1">
+                    {index === 0 ? (
+                      <span className="rounded-full bg-campus-green px-2 py-1 text-xs font-bold text-white shadow-sm">
+                        Cover
+                      </span>
+                    ) : null}
+                    <button
+                      className="rounded-full bg-white/95 px-2 py-1 text-xs font-bold text-campus-ink shadow-sm transition hover:bg-campus-mint disabled:opacity-50"
+                      disabled={index === 0}
+                      onClick={(event) => {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        handleMovePhoto(photo.id, -1);
+                      }}
+                      type="button"
+                    >
+                      Left
+                    </button>
+                    <button
+                      className="rounded-full bg-white/95 px-2 py-1 text-xs font-bold text-campus-ink shadow-sm transition hover:bg-campus-mint disabled:opacity-50"
+                      disabled={index === photos.length - 1}
+                      onClick={(event) => {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        handleMovePhoto(photo.id, 1);
+                      }}
+                      type="button"
+                    >
+                      Right
+                    </button>
+                    <button
+                      className="rounded-full bg-white/95 px-2 py-1 text-xs font-bold text-campus-coral shadow-sm transition hover:bg-campus-coral hover:text-white"
+                      onClick={(event) => {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        handleRemovePhoto(photo.id);
+                      }}
+                      type="button"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         ) : null}
         {isUploadingImage ? (
           <span className="mt-3 text-sm font-semibold text-campus-green">
@@ -247,13 +434,15 @@ export function CreateListingForm() {
           </span>
         ) : null}
         <input
-          accept="image/*"
+          accept=".jpg,.jpeg,.png,.webp,.gif,image/jpeg,image/png,image/webp,image/gif"
           className="sr-only"
-          name="image"
+          multiple
+          name="images"
           onChange={handleImageChange}
+          ref={imageInputRef}
           type="file"
         />
-      </label>
+      </div>
 
       <div className="grid gap-5 sm:grid-cols-2">
         <label className="space-y-2">

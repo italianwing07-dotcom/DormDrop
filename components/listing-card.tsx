@@ -12,6 +12,8 @@ const badgeStyles: Record<Listing["type"], string> = {
 export function ListingCard({ listing }: { listing: Listing }) {
   const badgeClass = badgeStyles[listing.type] ?? badgeStyles["For Sale"];
   const postedDate = formatPostedDate(listing.createdAt);
+  const coverImageUrl = listing.image;
+  const isRemoteImage = coverImageUrl.startsWith("http");
 
   return (
     <article className="group overflow-hidden rounded-3xl border border-campus-ink/10 bg-white shadow-soft transition duration-200 hover:-translate-y-1 hover:border-campus-green/30 hover:shadow-lg">
@@ -20,7 +22,8 @@ export function ListingCard({ listing }: { listing: Listing }) {
           alt={listing.title}
           className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"
           height={480}
-          src={listing.image}
+          unoptimized={isRemoteImage}
+          src={coverImageUrl}
           width={640}
         />
       </div>

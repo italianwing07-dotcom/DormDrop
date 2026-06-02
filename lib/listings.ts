@@ -1,12 +1,16 @@
 export type Listing = {
   id: string;
   slug: string;
+  ownerId?: string | null;
   title: string;
   type: "Free" | "For Sale" | "Wanted";
   price: string;
   campus: string;
   description: string;
   image: string;
+  images: string[];
+  image_url?: string | null;
+  image_urls?: string[] | null;
   sold: boolean;
   createdAt: string;
   seller: {
@@ -28,6 +32,7 @@ export const listings: Listing[] = [
     description:
       "Compact black mini fridge with a small freezer shelf. Clean, quiet, and ready for pickup before move-out.",
     image: "/listings/mini-fridge.svg",
+    images: ["/listings/mini-fridge.svg"],
     sold: false,
     createdAt: "2026-05-29T12:00:00.000Z",
     seller: {
@@ -46,6 +51,7 @@ export const listings: Listing[] = [
     description:
       "Adjustable LED desk lamp with three brightness settings. Works well for late study sessions.",
     image: "/listings/desk-lamp.svg",
+    images: ["/listings/desk-lamp.svg"],
     sold: false,
     createdAt: "2026-05-28T12:00:00.000Z",
     seller: {
@@ -64,6 +70,7 @@ export const listings: Listing[] = [
     description:
       "Intro economics and biology textbooks from this semester. Light highlighting, no missing pages.",
     image: "/listings/textbooks.svg",
+    images: ["/listings/textbooks.svg"],
     sold: false,
     createdAt: "2026-05-27T12:00:00.000Z",
     seller: {
@@ -82,6 +89,7 @@ export const listings: Listing[] = [
     description:
       "Looking for stackable bins or under-bed storage before move-in weekend. Flexible on pickup.",
     image: "/listings/storage-bins.svg",
+    images: ["/listings/storage-bins.svg"],
     sold: false,
     createdAt: "2026-05-26T12:00:00.000Z",
     seller: {
@@ -100,6 +108,7 @@ export const listings: Listing[] = [
     description:
       "Dorm-size microwave with simple controls. Fits on a small cart or shared suite counter.",
     image: "/listings/microwave.svg",
+    images: ["/listings/microwave.svg"],
     sold: false,
     createdAt: "2026-05-24T12:00:00.000Z",
     seller: {
@@ -118,6 +127,7 @@ export const listings: Listing[] = [
     description:
       "Lightweight saucer chair for a dorm corner. A little worn, still comfy and easy to carry.",
     image: "/listings/dorm-chair.svg",
+    images: ["/listings/dorm-chair.svg"],
     sold: false,
     createdAt: "2026-05-20T12:00:00.000Z",
     seller: {

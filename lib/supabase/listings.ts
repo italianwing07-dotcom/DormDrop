@@ -7,20 +7,59 @@ import type { ListingRow, NewListing } from "@/lib/supabase/types";
 const fallbackImage = "/listings/storage-bins.svg";
 const validCategories = ["Free", "For Sale", "Wanted"] as const;
 
+function normalizeImageUrls(imageUrls: unknown, fallbackUrl: string) {
+  if (Array.isArray(imageUrls)) {
+    const validUrls = imageUrls.filter(
+      (imageUrl): imageUrl is string =>
+        typeof imageUrl === "string" && imageUrl.trim().length > 0
+    );
+
+    if (validUrls.length > 0) {
+      return validUrls;
+    }
+  }
+
+  if (typeof imageUrls === "string" && imageUrls.trim().length > 0) {
+    try {
+      const parsedImageUrls = JSON.parse(imageUrls) as unknown;
+
+      if (Array.isArray(parsedImageUrls)) {
+        const validUrls = parsedImageUrls.filter(
+          (imageUrl): imageUrl is string =>
+            typeof imageUrl === "string" && imageUrl.trim().length > 0
+        );
+
+        if (validUrls.length > 0) {
+          return validUrls;
+        }
+      }
+    } catch {
+      return [imageUrls];
+    }
+  }
+
+  return [fallbackUrl || fallbackImage];
+}
+
 export function mapListingRow(row: ListingRow): Listing {
   const type = validCategories.includes(row.category)
     ? row.category
     : "For Sale";
+  const images = normalizeImageUrls(row.image_urls, row.image_url || fallbackImage);
 
   return {
     id: row.id,
     slug: row.id,
+    ownerId: row.user_id,
     title: row.title,
     type,
     price: row.price || "$0",
     campus: getCampusDisplayName(row.campus),
     description: row.description,
-    image: row.image_url || fallbackImage,
+    image: images[0] ?? fallbackImage,
+    images,
+    image_url: row.image_url,
+    image_urls: Array.isArray(row.image_urls) ? row.image_urls : null,
     sold: row.sold ?? false,
     createdAt: row.created_at,
     seller: {
@@ -97,6 +136,7 @@ export async function createListing(listing: NewListing) {
     category: listing.category,
     campus: listing.campus,
     image_url: listing.image_url,
+    image_urls: listing.image_urls ?? [listing.image_url],
     seller_email: listing.seller_email ?? null,
     sold: listing.sold ?? false
   };

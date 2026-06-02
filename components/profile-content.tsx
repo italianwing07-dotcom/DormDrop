@@ -10,10 +10,17 @@ import { getBrowserSupabaseClient } from "@/lib/supabase/browser-client";
 import type { ListingRow } from "@/lib/supabase/types";
 import type { User } from "@supabase/supabase-js";
 
+type ProfileTab = "my" | "saved";
+type SavedListingResult = {
+  listings: ListingRow | null;
+};
+
 export function ProfileContent() {
   const [user, setUser] = useState<User | null>(null);
   const [userListings, setUserListings] = useState<ListingRow[]>([]);
+  const [savedListings, setSavedListings] = useState<ListingRow[]>([]);
   const [savedCount, setSavedCount] = useState(0);
+  const [activeTab, setActiveTab] = useState<ProfileTab>("my");
   const [activeCampusFilter, setActiveCampusFilter] = useState("All");
   const [deletingListingId, setDeletingListingId] = useState<string | null>(null);
   const [updatingSoldListingId, setUpdatingSoldListingId] = useState<string | null>(null);
@@ -38,6 +45,7 @@ export function ProfileContent() {
 
         if (!currentUser) {
           setUserListings([]);
+          setSavedListings([]);
           setSavedCount(0);
           return;
         }
@@ -52,17 +60,23 @@ export function ProfileContent() {
           throw error;
         }
 
-        const { count: savedListingsCount, error: savedListingsError } = await supabase
+        const { data: savedListingsData, error: savedListingsError } = await supabase
           .from("saved_listings")
-          .select("*", { count: "exact", head: true })
-          .eq("user_id", currentUser.id);
+          .select("listings(*)")
+          .eq("user_id", currentUser.id)
+          .order("created_at", { ascending: false });
 
         if (savedListingsError) {
           throw savedListingsError;
         }
 
+        const mappedSavedListings = ((savedListingsData ?? []) as unknown as SavedListingResult[])
+          .map((savedListing) => savedListing.listings)
+          .filter((listing): listing is ListingRow => Boolean(listing));
+
         setUserListings(data ?? []);
-        setSavedCount(savedListingsCount ?? 0);
+        setSavedListings(mappedSavedListings);
+        setSavedCount(mappedSavedListings.length);
       } catch (caughtError) {
         setError(
           caughtError instanceof Error
@@ -100,6 +114,13 @@ export function ProfileContent() {
       setUserListings((currentListings) =>
         currentListings.filter((listing) => listing.id !== listingId)
       );
+      setSavedListings((currentListings) => {
+        const nextListings = currentListings.filter(
+          (listing) => listing.id !== listingId
+        );
+        setSavedCount(nextListings.length);
+        return nextListings;
+      });
     } catch (caughtError) {
       setDeleteError(
         caughtError instanceof Error
@@ -212,7 +233,9 @@ export function ProfileContent() {
     (listing) => listing.category === "Wanted"
   ).length;
   const hasUserListings = filteredUserListings.length > 0;
-  const showEmptyState = !isLoading && filteredUserListings.length === 0;
+  const hasSavedListings = savedListings.length > 0;
+  const showMyListingsEmptyState = !isLoading && filteredUserListings.length === 0;
+  const showSavedListingsEmptyState = !isLoading && savedListings.length === 0;
 
   return (
     <main className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
@@ -265,9 +288,37 @@ export function ProfileContent() {
         <div className="space-y-4">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p className="text-sm font-semibold text-campus-green">My listings</p>
-              <h2 className="mt-1 text-2xl font-bold tracking-tight">Current posts</h2>
+              <p className="text-sm font-semibold text-campus-green">Profile listings</p>
+              <h2 className="mt-1 text-2xl font-bold tracking-tight">
+                {activeTab === "my" ? "My listings" : "Saved listings"}
+              </h2>
             </div>
+            <div className="grid grid-cols-2 rounded-full bg-campus-paper p-1">
+              <button
+                className={`min-h-10 rounded-full px-4 text-sm font-semibold transition ${
+                  activeTab === "my"
+                    ? "bg-white text-campus-ink shadow-sm"
+                    : "text-campus-ink/60 hover:text-campus-ink"
+                }`}
+                onClick={() => setActiveTab("my")}
+                type="button"
+              >
+                My Listings
+              </button>
+              <button
+                className={`min-h-10 rounded-full px-4 text-sm font-semibold transition ${
+                  activeTab === "saved"
+                    ? "bg-white text-campus-ink shadow-sm"
+                    : "text-campus-ink/60 hover:text-campus-ink"
+                }`}
+                onClick={() => setActiveTab("saved")}
+                type="button"
+              >
+                Saved Listings
+              </button>
+            </div>
+          </div>
+          {activeTab === "my" ? (
             <label className="block sm:w-56">
               <span className="sr-only">Filter profile listings by campus</span>
               <select
@@ -283,13 +334,13 @@ export function ProfileContent() {
                 ))}
               </select>
             </label>
-          </div>
-          {deleteError ? (
+          ) : null}
+          {activeTab === "my" && deleteError ? (
             <div className="rounded-2xl bg-campus-coral/10 p-4 text-sm font-medium leading-6 text-campus-ink">
               {deleteError}
             </div>
           ) : null}
-          {hasUserListings ? (
+          {activeTab === "my" && hasUserListings ? (
             <div className="grid gap-4 sm:grid-cols-2">
               {filteredUserListings.map((sourceListing) => {
                 const listing = mapListingRow(sourceListing);
@@ -331,7 +382,16 @@ export function ProfileContent() {
               })}
             </div>
           ) : null}
-          {showEmptyState ? (
+          {activeTab === "saved" && hasSavedListings ? (
+            <div className="grid gap-4 sm:grid-cols-2">
+              {savedListings.map((sourceListing) => {
+                const listing = mapListingRow(sourceListing);
+
+                return <ListingCard key={listing.id} listing={listing} />;
+              })}
+            </div>
+          ) : null}
+          {activeTab === "my" && showMyListingsEmptyState ? (
             <div className="rounded-3xl border border-campus-ink/10 bg-white p-8 text-center shadow-soft">
               <p className="text-sm font-semibold text-campus-green">No listings yet</p>
               <h3 className="mt-2 text-xl font-bold tracking-tight">{activeCampusFilter === "All"
@@ -347,6 +407,21 @@ export function ProfileContent() {
                 href="/create"
               >
                 Create listing
+              </Link>
+            </div>
+          ) : null}
+          {activeTab === "saved" && showSavedListingsEmptyState ? (
+            <div className="rounded-3xl border border-campus-ink/10 bg-white p-8 text-center shadow-soft">
+              <p className="text-sm font-semibold text-campus-green">No saved listings yet</p>
+              <h3 className="mt-2 text-xl font-bold tracking-tight">Saved listings will appear here.</h3>
+              <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-campus-ink/60">
+                Save a listing from its details page when you want to come back to it later.
+              </p>
+              <Link
+                className="mt-5 inline-flex min-h-12 items-center rounded-full bg-campus-green px-6 text-sm font-semibold text-white transition hover:bg-campus-ink"
+                href="/browse"
+              >
+                Browse listings
               </Link>
             </div>
           ) : null}
