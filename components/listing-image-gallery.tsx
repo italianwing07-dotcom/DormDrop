@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export function ListingImageGallery({
   images,
@@ -12,58 +12,188 @@ export function ListingImageGallery({
 }) {
   const safeImages = images.length > 0 ? images : ["/listings/storage-bins.svg"];
   const [activeIndex, setActiveIndex] = useState(0);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const activeImage = safeImages[activeIndex] ?? safeImages[0];
   const isRemoteActiveImage = activeImage.startsWith("http");
+  const hasMultipleImages = safeImages.length > 1;
+
+  function showPreviousImage() {
+    setActiveIndex((currentIndex) =>
+      currentIndex === 0 ? safeImages.length - 1 : currentIndex - 1
+    );
+  }
+
+  function showNextImage() {
+    setActiveIndex((currentIndex) =>
+      currentIndex === safeImages.length - 1 ? 0 : currentIndex + 1
+    );
+  }
+
+  useEffect(() => {
+    if (!isLightboxOpen) {
+      return;
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setIsLightboxOpen(false);
+      }
+
+      if (event.key === "ArrowLeft" && hasMultipleImages) {
+        setActiveIndex((currentIndex) =>
+          currentIndex === 0 ? safeImages.length - 1 : currentIndex - 1
+        );
+      }
+
+      if (event.key === "ArrowRight" && hasMultipleImages) {
+        setActiveIndex((currentIndex) =>
+          currentIndex === safeImages.length - 1 ? 0 : currentIndex + 1
+        );
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [hasMultipleImages, isLightboxOpen, safeImages.length]);
 
   return (
-    <div className="overflow-hidden rounded-3xl border border-campus-ink/10 bg-white shadow-soft">
-      <div className="relative aspect-[4/3] bg-campus-mint">
-        <Image
-          alt={title}
-          className="h-full w-full object-cover"
-          fill
-          priority
-          unoptimized={isRemoteActiveImage}
-          sizes="(min-width: 1024px) 55vw, 100vw"
-          src={activeImage}
-        />
-        {safeImages.length > 1 ? (
-          <div className="absolute bottom-3 right-3 rounded-full bg-campus-ink/80 px-3 py-1 text-xs font-bold text-white">
-            {activeIndex + 1} / {safeImages.length}
+    <>
+      <div className="overflow-hidden rounded-3xl border border-campus-ink/10 bg-white shadow-soft">
+        <div className="relative aspect-[4/3] bg-campus-paper">
+          <button
+            aria-label="Open image gallery"
+            className="group relative h-full w-full overflow-hidden text-left"
+            onClick={() => setIsLightboxOpen(true)}
+            type="button"
+          >
+            <Image
+              alt={title}
+              className="h-full w-full object-contain transition duration-300 group-hover:scale-[1.01]"
+              fill
+              priority
+              unoptimized={isRemoteActiveImage}
+              sizes="(min-width: 1024px) 55vw, 100vw"
+              src={activeImage}
+            />
+            <span className="absolute bottom-3 left-3 rounded-full bg-white/95 px-3 py-1 text-xs font-bold text-campus-ink shadow-sm">
+              Click to enlarge
+            </span>
+          </button>
+
+          {hasMultipleImages ? (
+            <>
+              <button
+                aria-label="Previous image"
+                className="absolute left-3 top-1/2 flex size-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/95 text-lg font-black text-campus-ink shadow-sm transition hover:bg-campus-mint"
+                onClick={showPreviousImage}
+                type="button"
+              >
+                &lt;
+              </button>
+              <button
+                aria-label="Next image"
+                className="absolute right-3 top-1/2 flex size-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/95 text-lg font-black text-campus-ink shadow-sm transition hover:bg-campus-mint"
+                onClick={showNextImage}
+                type="button"
+              >
+                &gt;
+              </button>
+              <div className="absolute bottom-3 right-3 rounded-full bg-campus-ink/80 px-3 py-1 text-xs font-bold text-white">
+                {activeIndex + 1} / {safeImages.length}
+              </div>
+            </>
+          ) : null}
+        </div>
+
+        {hasMultipleImages ? (
+          <div className="grid grid-cols-5 gap-2 p-3 sm:gap-3 sm:p-4">
+            {safeImages.map((image, index) => {
+              const isActive = activeIndex === index;
+              const isRemoteThumbnail = image.startsWith("http");
+
+              return (
+                <button
+                  aria-label={"Show image " + (index + 1)}
+                  className={"relative aspect-square overflow-hidden rounded-2xl border transition " +
+                    (isActive
+                      ? "border-campus-green ring-2 ring-campus-green/20"
+                      : "border-campus-ink/10 hover:border-campus-green/40")}
+                  key={image + "-" + index}
+                  onClick={() => setActiveIndex(index)}
+                  type="button"
+                >
+                  <Image
+                    alt={title + " thumbnail " + (index + 1)}
+                    className="h-full w-full object-cover"
+                    fill
+                    unoptimized={isRemoteThumbnail}
+                    sizes="96px"
+                    src={image}
+                  />
+                </button>
+              );
+            })}
           </div>
         ) : null}
       </div>
-      {safeImages.length > 1 ? (
-        <div className="grid grid-cols-5 gap-2 p-3">
-          {safeImages.map((image, index) => {
-            const isActive = activeIndex === index;
-            const isRemoteThumbnail = image.startsWith("http");
 
-            return (
-              <button
-                aria-label={`Show image ${index + 1}`}
-                className={`relative aspect-square overflow-hidden rounded-2xl border transition ${
-                  isActive
-                    ? "border-campus-green ring-2 ring-campus-green/20"
-                    : "border-campus-ink/10 hover:border-campus-green/40"
-                }`}
-                key={`${image}-${index}`}
-                onClick={() => setActiveIndex(index)}
-                type="button"
-              >
-                <Image
-                  alt={`${title} thumbnail ${index + 1}`}
-                  className="h-full w-full object-cover"
-                  fill
-                  unoptimized={isRemoteThumbnail}
-                  sizes="96px"
-                  src={image}
-                />
-              </button>
-            );
-          })}
+      {isLightboxOpen ? (
+        <div
+          aria-modal="true"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-campus-ink/90 p-3 sm:p-6"
+          role="dialog"
+        >
+          <button
+            aria-label="Close gallery"
+            className="absolute right-4 top-4 z-10 flex size-11 items-center justify-center rounded-full bg-white text-lg font-black text-campus-ink shadow-soft transition hover:bg-campus-mint sm:right-6 sm:top-6"
+            onClick={() => setIsLightboxOpen(false)}
+            type="button"
+          >
+            X
+          </button>
+
+          {hasMultipleImages ? (
+            <button
+              aria-label="Previous image"
+              className="absolute left-3 top-1/2 z-10 flex size-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/95 text-lg font-black text-campus-ink shadow-soft transition hover:bg-campus-mint sm:left-6 sm:size-12"
+              onClick={showPreviousImage}
+              type="button"
+            >
+              &lt;
+            </button>
+          ) : null}
+
+          <div className="relative h-[72vh] w-full max-w-5xl overflow-hidden rounded-3xl bg-campus-paper shadow-soft sm:h-[82vh]">
+            <Image
+              alt={title + " enlarged image"}
+              className="h-full w-full object-contain"
+              fill
+              priority
+              unoptimized={isRemoteActiveImage}
+              sizes="100vw"
+              src={activeImage}
+            />
+          </div>
+
+          {hasMultipleImages ? (
+            <button
+              aria-label="Next image"
+              className="absolute right-3 top-1/2 z-10 flex size-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/95 text-lg font-black text-campus-ink shadow-soft transition hover:bg-campus-mint sm:right-6 sm:size-12"
+              onClick={showNextImage}
+              type="button"
+            >
+              &gt;
+            </button>
+          ) : null}
+
+          <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-3 rounded-full bg-white/95 px-4 py-2 text-xs font-bold text-campus-ink shadow-soft sm:bottom-6">
+            <span>{activeIndex + 1} / {safeImages.length}</span>
+          </div>
         </div>
       ) : null}
-    </div>
+    </>
   );
 }
