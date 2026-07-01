@@ -4,7 +4,7 @@ import { getBrowserSupabaseClient } from "@/lib/supabase/browser-client";
 import { supabase } from "@/lib/supabase/client";
 import type { ListingRow, NewListing } from "@/lib/supabase/types";
 
-const fallbackImage = "/listings/storage-bins.svg";
+const fallbackImage = "";
 const validCategories = ["Free", "For Sale", "Wanted"] as const;
 
 function normalizeImageUrls(imageUrls: unknown, fallbackUrl: string) {

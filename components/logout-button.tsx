@@ -40,7 +40,7 @@ export function LogoutButton() {
   if (!email) {
     return (
       <Link
-        className="rounded-full bg-campus-ink px-4 py-2 text-sm font-semibold text-white transition hover:bg-campus-green"
+        className="flex min-h-10 shrink-0 items-center rounded-[14px] bg-campus-green px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-campus-hover"
         href="/login"
       >
         Login
@@ -50,7 +50,7 @@ export function LogoutButton() {
 
   return (
     <button
-      className="rounded-full bg-campus-ink px-4 py-2 text-sm font-semibold text-white transition hover:bg-campus-green disabled:opacity-70"
+      className="min-h-10 shrink-0 rounded-[14px] bg-campus-green px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-campus-hover disabled:opacity-70"
       disabled={isLoggingOut}
       onClick={handleLogout}
       type="button"

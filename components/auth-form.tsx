@@ -54,10 +54,10 @@ export function AuthForm() {
 
   return (
     <>
-      <div className="grid grid-cols-2 rounded-full bg-campus-paper p-1">
+      <div className="grid grid-cols-2 rounded-[14px] bg-campus-paper p-1">
         <button
-          className={`min-h-11 rounded-full text-sm font-bold transition ${
-            mode === "login" ? "bg-white text-campus-ink shadow-sm" : "text-campus-ink/60"
+          className={`min-h-11 rounded-[14px] text-sm font-bold transition ${
+            mode === "login" ? "bg-campus-card text-campus-ink shadow-sm" : "text-campus-muted"
           }`}
           onClick={() => setMode("login")}
           type="button"
@@ -65,8 +65,8 @@ export function AuthForm() {
           Sign in
         </button>
         <button
-          className={`min-h-11 rounded-full text-sm font-bold transition ${
-            mode === "signup" ? "bg-white text-campus-ink shadow-sm" : "text-campus-ink/60"
+          className={`min-h-11 rounded-[14px] text-sm font-bold transition ${
+            mode === "signup" ? "bg-campus-card text-campus-ink shadow-sm" : "text-campus-muted"
           }`}
           onClick={() => setMode("signup")}
           type="button"
@@ -79,7 +79,7 @@ export function AuthForm() {
         <label className="space-y-2">
           <span className="text-sm font-semibold">Email</span>
           <input
-            className="min-h-12 w-full rounded-2xl border border-campus-ink/15 px-4 outline-none transition focus:border-campus-green focus:ring-4 focus:ring-campus-green/10"
+            className="min-h-12 w-full rounded-[14px] border border-campus-border bg-campus-paper px-4 outline-none transition placeholder:text-campus-muted focus:border-campus-green focus:bg-campus-card focus:ring-4 focus:ring-campus-green/10"
             name="email"
             placeholder="student@university.edu"
             required
@@ -89,7 +89,7 @@ export function AuthForm() {
         <label className="space-y-2">
           <span className="text-sm font-semibold">Password</span>
           <input
-            className="min-h-12 w-full rounded-2xl border border-campus-ink/15 px-4 outline-none transition focus:border-campus-green focus:ring-4 focus:ring-campus-green/10"
+            className="min-h-12 w-full rounded-[14px] border border-campus-border bg-campus-paper px-4 outline-none transition placeholder:text-campus-muted focus:border-campus-green focus:bg-campus-card focus:ring-4 focus:ring-campus-green/10"
             minLength={6}
             name="password"
             placeholder="Password"
@@ -99,19 +99,19 @@ export function AuthForm() {
         </label>
 
         {error ? (
-          <div className="rounded-2xl bg-campus-coral/10 p-4 text-sm font-medium leading-6 text-campus-ink">
+          <div className="rounded-[14px] bg-campus-coral/10 p-4 text-sm font-medium leading-6 text-campus-ink">
             {error}
           </div>
         ) : null}
 
         {message ? (
-          <div className="rounded-2xl bg-campus-mint p-4 text-sm font-medium leading-6 text-campus-ink">
+          <div className="rounded-[14px] bg-campus-successBg p-4 text-sm font-medium leading-6 text-campus-success">
             {message}
           </div>
         ) : null}
 
         <button
-          className="min-h-12 w-full rounded-full bg-campus-green px-6 text-sm font-semibold text-white transition hover:bg-campus-ink disabled:cursor-not-allowed disabled:opacity-70"
+          className="min-h-12 w-full rounded-[14px] bg-campus-green px-6 text-sm font-semibold text-white transition hover:bg-campus-hover disabled:cursor-not-allowed disabled:opacity-70"
           disabled={isSubmitting}
           type="submit"
         >

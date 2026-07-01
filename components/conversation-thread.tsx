@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { ListingImagePlaceholder, isPlaceholderImageUrl } from "@/components/listing-image-placeholder";
 import { getCampusDisplayName } from "@/lib/campuses";
 import { getBrowserSupabaseClient } from "@/lib/supabase/browser-client";
 import type { ConversationRow, ListingRow, MessageRow } from "@/lib/supabase/types";
@@ -236,9 +237,9 @@ export function ConversationThread() {
     return (
       <main className="mx-auto w-full max-w-4xl px-4 py-6 sm:px-6 lg:px-8">
         <div className="space-y-4">
-          <div className="h-5 w-28 rounded-full bg-campus-mint" />
-          <div className="h-28 rounded-3xl bg-white shadow-soft" />
-          <div className="h-80 rounded-3xl bg-white shadow-soft" />
+          <div className="h-5 w-28 rounded-[14px] bg-slate-50" />
+          <div className="h-28 rounded-[20px] bg-campus-card shadow-soft" />
+          <div className="h-80 rounded-[20px] bg-campus-card shadow-soft" />
         </div>
       </main>
     );
@@ -247,11 +248,11 @@ export function ConversationThread() {
   if (!user) {
     return (
       <main className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 lg:px-8">
-        <section className="rounded-3xl border border-campus-ink/10 bg-white p-6 shadow-soft">
+        <section className="rounded-[20px] border border-campus-border bg-campus-card p-6 shadow-soft">
           <p className="text-sm font-semibold text-campus-coral">Login required</p>
           <h1 className="mt-2 text-2xl font-bold tracking-tight">Sign in to view messages</h1>
           <Link
-            className="mt-5 inline-flex min-h-12 items-center rounded-full bg-campus-green px-6 text-sm font-semibold text-white transition hover:bg-campus-ink"
+            className="mt-5 inline-flex min-h-12 items-center rounded-[14px] bg-campus-green px-6 text-sm font-semibold text-white transition hover:bg-campus-hover"
             href="/login"
           >
             Go to login
@@ -264,14 +265,14 @@ export function ConversationThread() {
   if (error || !conversation) {
     return (
       <main className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 lg:px-8">
-        <section className="rounded-3xl border border-campus-ink/10 bg-white p-6 shadow-soft">
+        <section className="rounded-[20px] border border-campus-border bg-campus-card p-6 shadow-soft">
           <p className="text-sm font-semibold text-campus-coral">Conversation unavailable</p>
           <h1 className="mt-2 text-2xl font-bold tracking-tight">Could not open this thread</h1>
-          <p className="mt-3 text-sm leading-6 text-campus-ink/70">
+          <p className="mt-3 text-sm leading-6 text-campus-muted">
             {error ?? "You may not have access to this conversation."}
           </p>
           <Link
-            className="mt-5 inline-flex min-h-12 items-center rounded-full bg-campus-green px-6 text-sm font-semibold text-white transition hover:bg-campus-ink"
+            className="mt-5 inline-flex min-h-12 items-center rounded-[14px] bg-campus-green px-6 text-sm font-semibold text-white transition hover:bg-campus-hover"
             href="/inbox"
           >
             Back to inbox
@@ -288,9 +289,9 @@ export function ConversationThread() {
           Back to inbox
         </Link>
 
-        <div className="flex gap-4 rounded-3xl border border-campus-ink/10 bg-white p-4 shadow-soft">
-          <div className="relative size-20 shrink-0 overflow-hidden rounded-2xl bg-campus-mint sm:size-24">
-            {listing?.image_url ? (
+        <div className="flex gap-3 rounded-[20px] border border-campus-border bg-campus-card p-3 shadow-soft sm:gap-4 sm:p-4">
+          <div className="relative size-16 shrink-0 overflow-hidden rounded-[14px] bg-slate-50 sm:size-24">
+            {listing && !isPlaceholderImageUrl(listing.image_url) ? (
               <Image
                 alt={listing.title}
                 className="h-full w-full object-cover"
@@ -298,21 +299,27 @@ export function ConversationThread() {
                 src={listing.image_url}
                 width={160}
               />
+            ) : listing ? (
+              <ListingImagePlaceholder
+                category={listing.category}
+                className="p-2"
+                title={listing.title}
+              />
             ) : null}
           </div>
           <div className="min-w-0">
             <p className="text-sm font-semibold text-campus-green">Message thread</p>
-            <h1 className="truncate text-2xl font-bold tracking-tight">
+            <h1 className="truncate text-xl font-bold tracking-tight sm:text-2xl">
               {listing?.title ?? "DormDrop listing"}
             </h1>
-            <p className="mt-1 text-sm text-campus-ink/60">
+            <p className="mt-1 text-sm text-campus-muted">
               {getCampusDisplayName(listing?.campus)}
             </p>
           </div>
         </div>
 
-        <div className="space-y-4 rounded-3xl border border-campus-ink/10 bg-white p-4 shadow-soft sm:p-5">
-          <div className="max-h-[55vh] space-y-3 overflow-y-auto pr-1">
+        <div className="space-y-4 rounded-[20px] border border-campus-border bg-campus-card p-3 shadow-soft sm:p-5">
+          <div className="max-h-[52svh] space-y-3 overflow-y-auto pr-1 sm:max-h-[55vh]">
             {messages.length > 0 ? (
               messages.map((threadMessage) => {
                 const isMine = threadMessage.sender_id === user.id;
@@ -324,48 +331,48 @@ export function ConversationThread() {
 
                 return (
                   <div
-                    className={`rounded-2xl p-4 ${
-                      isMine ? "bg-campus-mint" : "bg-campus-paper"
+                    className={`rounded-[14px] p-3 sm:p-4 ${
+                      isMine ? "bg-slate-50" : "bg-campus-paper"
                     }`}
                     key={threadMessage.id}
                   >
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <p className="text-sm font-bold text-campus-ink">{senderLabel}</p>
-                      <p className="text-xs font-semibold text-campus-ink/50">
+                      <p className="text-xs font-semibold text-campus-muted">
                         {formatMessageTime(threadMessage.created_at)}
                       </p>
                     </div>
-                    <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-campus-ink/75">
+                    <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-campus-muted">
                       {threadMessage.content}
                     </p>
                   </div>
                 );
               })
             ) : (
-              <div className="rounded-2xl bg-campus-paper p-5 text-center">
-                <p className="text-sm font-semibold text-campus-ink/70">
+              <div className="rounded-[14px] bg-campus-paper p-5 text-center">
+                <p className="text-sm font-semibold text-campus-muted">
                   No messages yet.
                 </p>
               </div>
             )}
           </div>
 
-          <label className="block space-y-2 border-t border-campus-ink/10 pt-4">
+          <label className="block space-y-2 border-t border-campus-border pt-4">
             <span className="text-sm font-semibold">Reply</span>
             <textarea
-              className="min-h-28 w-full rounded-2xl border border-campus-ink/15 px-4 py-3 text-sm outline-none transition focus:border-campus-green focus:ring-4 focus:ring-campus-green/10"
+              className="min-h-32 w-full rounded-[14px] border border-campus-border px-4 py-3 text-base outline-none transition focus:border-campus-green focus:ring-4 focus:ring-campus-green/10 sm:min-h-28 sm:text-sm"
               onChange={(event) => setMessage(event.target.value)}
               placeholder="Write a message..."
               value={message}
             />
           </label>
           {error ? (
-            <div className="rounded-2xl bg-campus-coral/10 p-4 text-sm font-medium leading-6 text-campus-ink">
+            <div className="rounded-[14px] bg-campus-coral/10 p-4 text-sm font-medium leading-6 text-campus-ink">
               {error}
             </div>
           ) : null}
           <button
-            className="min-h-12 w-full rounded-full bg-campus-green px-6 text-sm font-semibold text-white transition hover:bg-campus-ink disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto"
+            className="min-h-12 w-full rounded-[14px] bg-campus-green px-6 text-sm font-semibold text-white transition hover:bg-campus-hover disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto"
             disabled={isSending || !message.trim()}
             onClick={handleSend}
             type="button"

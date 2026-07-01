@@ -136,13 +136,13 @@ export function InboxNavLink() {
 
   return (
     <Link
-      className="relative rounded-full px-3 py-2 text-sm font-semibold text-campus-ink/70 transition hover:bg-white hover:text-campus-ink"
+      className="relative flex min-h-10 shrink-0 items-center rounded-[14px] px-3 py-2 text-sm font-semibold text-campus-muted transition hover:bg-campus-paper hover:text-campus-ink"
       href="/inbox"
     >
       <span className="inline-flex items-center gap-1.5">
         Inbox
         {unreadCount > 0 ? (
-          <span className="flex min-w-5 items-center justify-center rounded-full bg-campus-coral px-1.5 py-0.5 text-[10px] font-black leading-none text-white">
+          <span className="flex min-w-5 items-center justify-center rounded-[14px] bg-campus-coral px-1.5 py-0.5 text-[10px] font-black leading-none text-white">
             {badgeLabel}
           </span>
         ) : null}

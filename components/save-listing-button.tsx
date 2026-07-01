@@ -6,9 +6,10 @@ import { getBrowserSupabaseClient } from "@/lib/supabase/browser-client";
 
 type SaveListingButtonProps = {
   listingId: string;
+  variant?: "full" | "icon";
 };
 
-export function SaveListingButton({ listingId }: SaveListingButtonProps) {
+export function SaveListingButton({ listingId, variant = "full" }: SaveListingButtonProps) {
   const router = useRouter();
   const [userId, setUserId] = useState<string | null>(null);
   const [isSaved, setIsSaved] = useState(false);
@@ -125,10 +126,30 @@ export function SaveListingButton({ listingId }: SaveListingButtonProps) {
     }
   }
 
+  if (variant === "icon") {
+    return (
+      <div className="space-y-1">
+        <button
+          aria-label={isSaved ? "Unsave listing" : "Save listing"}
+          className={
+            "flex size-11 items-center justify-center rounded-[14px] border border-white/70 bg-campus-card/95 text-lg font-black shadow-sm backdrop-blur transition hover:scale-105 hover:bg-white disabled:cursor-not-allowed disabled:opacity-70 " +
+            (isSaved ? "text-campus-coral" : "text-campus-ink")
+          }
+          disabled={isLoading || isSaving}
+          onClick={handleToggleSaved}
+          type="button"
+        >
+          {isSaved ? "♥" : "♡"}
+        </button>
+        {error ? <p className="sr-only">{error}</p> : null}
+      </div>
+    );
+  }
+
   return (
     <div className="mt-4 space-y-2">
       <button
-        className="min-h-12 w-full rounded-full bg-campus-paper px-6 text-sm font-semibold text-campus-ink transition hover:bg-campus-mint disabled:cursor-not-allowed disabled:opacity-70"
+        className="min-h-12 w-full rounded-[14px] border border-campus-border bg-campus-paper px-6 text-sm font-bold text-campus-ink transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-70"
         disabled={isLoading || isSaving}
         onClick={handleToggleSaved}
         type="button"

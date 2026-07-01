@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { ListingImagePlaceholder, isPlaceholderImageUrl } from "@/components/listing-image-placeholder";
 import { getBrowserSupabaseClient } from "@/lib/supabase/browser-client";
 import { getCampusDisplayName } from "@/lib/campuses";
 import type { ConversationRow, ListingRow, MessageRow } from "@/lib/supabase/types";
@@ -138,9 +139,9 @@ export function InboxContent() {
     return (
       <main className="mx-auto w-full max-w-4xl px-4 py-6 sm:px-6 lg:px-8">
         <section className="space-y-4">
-          <div className="h-9 w-40 rounded-full bg-campus-mint" />
+          <div className="h-9 w-40 rounded-[14px] bg-slate-50" />
           {Array.from({ length: 3 }).map((_, index) => (
-            <div className="h-28 rounded-3xl border border-campus-ink/10 bg-white shadow-soft" key={index} />
+            <div className="h-28 rounded-[20px] border border-campus-border bg-campus-card shadow-soft" key={index} />
           ))}
         </section>
       </main>
@@ -150,11 +151,11 @@ export function InboxContent() {
   if (!user) {
     return (
       <main className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 lg:px-8">
-        <section className="rounded-3xl border border-campus-ink/10 bg-white p-6 shadow-soft">
+        <section className="rounded-[20px] border border-campus-border bg-campus-card p-6 shadow-soft">
           <p className="text-sm font-semibold text-campus-coral">Login required</p>
           <h1 className="mt-2 text-2xl font-bold tracking-tight">Sign in to view your inbox</h1>
           <Link
-            className="mt-5 inline-flex min-h-12 items-center rounded-full bg-campus-green px-6 text-sm font-semibold text-white transition hover:bg-campus-ink"
+            className="mt-5 inline-flex min-h-12 items-center rounded-[14px] bg-campus-green px-6 text-sm font-semibold text-white transition hover:bg-campus-hover"
             href="/login"
           >
             Go to login
@@ -174,7 +175,7 @@ export function InboxContent() {
           </h1>
         </div>
         {error ? (
-          <div className="rounded-2xl bg-campus-coral/10 p-4 text-sm font-medium leading-6 text-campus-ink">
+          <div className="rounded-[14px] bg-campus-coral/10 p-4 text-sm font-medium leading-6 text-campus-ink">
             {error}
           </div>
         ) : null}
@@ -182,16 +183,16 @@ export function InboxContent() {
           <div className="space-y-3">
             {previews.map(({ conversation, listing, lastMessage, isUnread }) => (
               <Link
-                className={`flex gap-4 rounded-3xl border p-4 shadow-soft transition hover:-translate-y-0.5 hover:border-campus-green/30 ${
+                className={`flex gap-3 rounded-[20px] border p-3 shadow-soft transition hover:-translate-y-0.5 hover:border-campus-green/30 sm:gap-4 sm:p-4 ${
                   isUnread
-                    ? "border-campus-green/40 bg-campus-mint/70"
-                    : "border-campus-ink/10 bg-white"
+                    ? "border-campus-green/40 bg-slate-50"
+                    : "border-campus-border bg-campus-card"
                 }`}
                 href={`/inbox/${conversation.id}`}
                 key={conversation.id}
               >
-                <div className="relative size-20 shrink-0 overflow-hidden rounded-2xl bg-campus-mint sm:size-24">
-                  {listing?.image_url ? (
+                <div className="relative size-16 shrink-0 overflow-hidden rounded-[14px] bg-slate-50 sm:size-24">
+                  {listing && !isPlaceholderImageUrl(listing.image_url) ? (
                     <Image
                       alt={listing.title}
                       className="h-full w-full object-cover"
@@ -199,30 +200,36 @@ export function InboxContent() {
                       src={listing.image_url}
                       width={160}
                     />
+                  ) : listing ? (
+                    <ListingImagePlaceholder
+                      category={listing.category}
+                      className="p-2"
+                      title={listing.title}
+                    />
                   ) : null}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-start justify-between gap-3">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
                     <div className="min-w-0">
                       <h2 className="truncate font-bold tracking-tight">
                         {listing?.title ?? "DormDrop listing"}
                       </h2>
-                      <p className="mt-1 text-sm text-campus-ink/60">
+                      <p className="mt-1 text-sm text-campus-muted">
                         {getCampusDisplayName(listing?.campus)}
                       </p>
                     </div>
                     {isUnread ? (
-                      <span className="shrink-0 rounded-full bg-campus-green px-3 py-1 text-xs font-bold text-white">
+                      <span className="w-fit shrink-0 rounded-[14px] bg-campus-green px-3 py-1 text-xs font-bold text-white">
                         Unread
                       </span>
                     ) : null}
                   </div>
-                  <p className="mt-3 line-clamp-2 text-sm leading-6 text-campus-ink/70">
+                  <p className="mt-2 line-clamp-2 text-sm leading-6 text-campus-muted sm:mt-3">
                     {lastMessage
                       ? `${lastMessage.sender_id === user.id ? "You" : "Them"}: ${lastMessage.content}`
                       : "No messages yet."}
                   </p>
-                  <p className="mt-2 text-xs font-semibold text-campus-ink/50">
+                  <p className="mt-2 text-xs font-semibold text-campus-muted">
                     {formatThreadTime(lastMessage?.created_at ?? conversation.last_message_at)}
                   </p>
                 </div>
@@ -230,14 +237,14 @@ export function InboxContent() {
             ))}
           </div>
         ) : (
-          <div className="rounded-3xl border border-campus-ink/10 bg-white p-8 text-center shadow-soft">
+          <div className="rounded-[20px] border border-campus-border bg-campus-card p-8 text-center shadow-soft">
             <p className="text-sm font-semibold text-campus-green">No messages yet</p>
             <h2 className="mt-2 text-xl font-bold tracking-tight">Conversations will appear here.</h2>
-            <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-campus-ink/60">
+            <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-campus-muted">
               Message a seller from a listing page to start a conversation.
             </p>
             <Link
-              className="mt-5 inline-flex min-h-12 items-center rounded-full bg-campus-green px-6 text-sm font-semibold text-white transition hover:bg-campus-ink"
+              className="mt-5 inline-flex min-h-12 items-center rounded-[14px] bg-campus-green px-6 text-sm font-semibold text-white transition hover:bg-campus-hover"
               href="/browse"
             >
               Browse listings
