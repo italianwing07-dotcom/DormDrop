@@ -9,6 +9,14 @@ type SaveListingButtonProps = {
   variant?: "full" | "icon";
 };
 
+function announceSavedListingChange(listingId: string, isSaved: boolean) {
+  window.dispatchEvent(
+    new CustomEvent("dormdrop:saved-listings-changed", {
+      detail: { listingId, isSaved }
+    })
+  );
+}
+
 export function SaveListingButton({ listingId, variant = "full" }: SaveListingButtonProps) {
   const router = useRouter();
   const [userId, setUserId] = useState<string | null>(null);
@@ -40,6 +48,7 @@ export function SaveListingButton({ listingId, variant = "full" }: SaveListingBu
 
         if (!user) {
           setIsSaved(false);
+        announceSavedListingChange(listingId, false);
           return;
         }
 
@@ -107,13 +116,14 @@ export function SaveListingButton({ listingId, variant = "full" }: SaveListingBu
       } else {
         const { error: insertError } = await supabase
           .from("saved_listings")
-          .insert({ user_id: userId, listing_id: listingId });
+          .upsert({ user_id: userId, listing_id: listingId }, { onConflict: "user_id,listing_id" });
 
         if (insertError) {
           throw insertError;
         }
 
         setIsSaved(true);
+        announceSavedListingChange(listingId, true);
       }
     } catch (caughtError) {
       setError(
@@ -131,6 +141,7 @@ export function SaveListingButton({ listingId, variant = "full" }: SaveListingBu
       <div className="space-y-1">
         <button
           aria-label={isSaved ? "Unsave listing" : "Save listing"}
+          aria-pressed={isSaved}
           className={
             "flex size-11 items-center justify-center rounded-[14px] border border-white/70 bg-campus-card/95 text-lg font-black shadow-sm backdrop-blur transition hover:scale-105 hover:bg-white disabled:cursor-not-allowed disabled:opacity-70 " +
             (isSaved ? "text-campus-coral" : "text-campus-ink")

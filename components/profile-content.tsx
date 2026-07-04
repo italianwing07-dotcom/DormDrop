@@ -29,6 +29,58 @@ export function ProfileContent() {
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
   useEffect(() => {
+    function handleSavedListingsChanged(event: Event) {
+      const { listingId, isSaved } = (event as CustomEvent<{
+        listingId?: string;
+        isSaved?: boolean;
+      }>).detail ?? {};
+
+      if (!listingId) {
+        return;
+      }
+
+      if (!isSaved) {
+        setSavedListings((currentListings) => {
+          const nextListings = currentListings.filter(
+            (listing) => listing.id !== listingId
+          );
+          setSavedCount(nextListings.length);
+          return nextListings;
+        });
+        return;
+      }
+
+      const savedListing = userListings.find((listing) => listing.id === listingId);
+
+      if (!savedListing) {
+        return;
+      }
+
+      setSavedListings((currentListings) => {
+        if (currentListings.some((listing) => listing.id === listingId)) {
+          return currentListings;
+        }
+
+        const nextListings = [savedListing, ...currentListings];
+        setSavedCount(nextListings.length);
+        return nextListings;
+      });
+    }
+
+    window.addEventListener(
+      "dormdrop:saved-listings-changed",
+      handleSavedListingsChanged
+    );
+
+    return () => {
+      window.removeEventListener(
+        "dormdrop:saved-listings-changed",
+        handleSavedListingsChanged
+      );
+    };
+  }, [userListings]);
+
+  useEffect(() => {
     async function loadProfile() {
       try {
         const supabase = getBrowserSupabaseClient();

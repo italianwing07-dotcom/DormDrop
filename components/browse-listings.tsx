@@ -13,7 +13,7 @@ const filterStyles: Record<CategoryFilter, string> = {
   All: "bg-campus-hover text-white",
   Free: "border border-campus-border bg-campus-card text-campus-ink",
   "For Sale": "bg-campus-gold text-campus-ink",
-  Wanted: "bg-slate-50 text-campus-green"
+  Wanted: "border border-campus-green/20 bg-slate-50 text-campus-green"
 };
 
 export function BrowseListings({

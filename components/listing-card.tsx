@@ -8,7 +8,7 @@ import type { Listing } from "@/lib/listings";
 const badgeStyles: Record<Listing["type"], string> = {
   Free: "border border-campus-border bg-campus-card text-campus-ink",
   "For Sale": "bg-campus-gold text-campus-ink",
-  Wanted: "bg-slate-50 text-campus-green"
+  Wanted: "border border-campus-green/20 bg-slate-50 text-campus-green"
 };
 
 export function ListingCard({ listing }: { listing: Listing }) {

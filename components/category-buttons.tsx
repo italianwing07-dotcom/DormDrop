@@ -1,7 +1,7 @@
 const categories = [
   { label: "Free", className: "border border-campus-border bg-campus-card text-campus-ink" },
   { label: "For Sale", className: "bg-campus-gold text-campus-ink" },
-  { label: "Wanted", className: "bg-slate-50 text-campus-green" }
+  { label: "Wanted", className: "border border-campus-green/20 bg-slate-50 text-campus-green" }
 ];
 
 export function CategoryButtons() {
