@@ -83,6 +83,22 @@ export type NewMessage = {
   created_at?: string;
 };
 
+export type ReportRow = {
+  id: string;
+  listing_id: string;
+  reporter_id: string;
+  reason: string;
+  details: string | null;
+  status: "open" | "reviewed" | "resolved";
+  created_at: string;
+};
+
+export type NewReport = Omit<ReportRow, "id" | "status" | "created_at"> & {
+  id?: string;
+  status?: ReportRow["status"];
+  created_at?: string;
+};
+
 export type Database = {
   public: {
     Tables: {
@@ -108,6 +124,12 @@ export type Database = {
         Row: MessageRow;
         Insert: NewMessage;
         Update: Partial<NewMessage>;
+        Relationships: [];
+      };
+      reports: {
+        Row: ReportRow;
+        Insert: NewReport;
+        Update: Partial<NewReport>;
         Relationships: [];
       };
     };
