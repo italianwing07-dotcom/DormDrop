@@ -8,7 +8,7 @@ export default function PrivacyPage() {
         <p>Listing details and photos may be visible to other visitors. Messages and saved listings are limited to authorized accounts through database access controls. Do not post sensitive personal information.</p>
         <p>Information is used to provide accounts, display listings, enable communication, prevent abuse, investigate reports, and improve reliability. DormDrop does not sell personal information.</p>
         <p>DormDrop uses Supabase for authentication, database, and file storage, and Vercel for hosting. These providers process data to deliver the service.</p>
-        <p>You may delete listings through your profile. Account deletion and privacy requests should be sent to the support contact published by DormDrop before public launch.</p>
+        <p>You may delete listings through your profile. Account deletion and privacy requests should be sent to <a className="font-semibold text-campus-green underline" href="mailto:dormdrop.support@gmail.com">dormdrop.support@gmail.com</a>.</p>
       </div>
     </main>
   );
