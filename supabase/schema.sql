@@ -68,6 +68,33 @@ create table if not exists public.messages (
 alter table public.conversations enable row level security;
 alter table public.messages enable row level security;
 
+create table if not exists public.reports (
+  id uuid primary key default gen_random_uuid(),
+  listing_id uuid not null references public.listings(id) on delete cascade,
+  reporter_id uuid not null references auth.users(id) on delete cascade,
+  reason text not null check (reason in ('Prohibited item', 'Spam or scam', 'Harassment', 'Incorrect information', 'Other')),
+  details text check (details is null or length(details) <= 1000),
+  status text not null default 'open' check (status in ('open', 'reviewed', 'resolved')),
+  created_at timestamptz not null default now(),
+  unique (listing_id, reporter_id)
+);
+
+alter table public.reports enable row level security;
+
+drop policy if exists "Users can submit reports" on public.reports;
+create policy "Users can submit reports"
+on public.reports
+for insert
+to authenticated
+with check (auth.uid() = reporter_id);
+
+drop policy if exists "Users can read their own reports" on public.reports;
+create policy "Users can read their own reports"
+on public.reports
+for select
+to authenticated
+using (auth.uid() = reporter_id);
+
 alter table public.messages
 add column if not exists receiver_id uuid references auth.users(id) on delete cascade;
 
@@ -234,7 +261,9 @@ using (
   and auth.uid()::text = (storage.foldername(name))[1]
 );
 
-insert into public.listings
+-- Optional demo data. Keep this commented out in production so rerunning the
+-- schema cannot create duplicate marketplace listings.
+/* insert into public.listings
   (title, description, price, category, campus, image_url)
 values
   (
@@ -284,4 +313,4 @@ values
     'Free',
     'Other',
     '/listings/dorm-chair.svg'
-  );
+  ); */

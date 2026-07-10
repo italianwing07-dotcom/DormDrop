@@ -79,6 +79,7 @@ export function AuthForm() {
         <label className="space-y-2">
           <span className="text-sm font-semibold">Email</span>
           <input
+            autoComplete="email"
             className="min-h-12 w-full rounded-[14px] border border-campus-border bg-campus-paper px-4 outline-none transition placeholder:text-campus-muted focus:border-campus-green focus:bg-campus-card focus:ring-4 focus:ring-campus-green/10"
             name="email"
             placeholder="student@university.edu"
@@ -89,6 +90,7 @@ export function AuthForm() {
         <label className="space-y-2">
           <span className="text-sm font-semibold">Password</span>
           <input
+            autoComplete={mode === "login" ? "current-password" : "new-password"}
             className="min-h-12 w-full rounded-[14px] border border-campus-border bg-campus-paper px-4 outline-none transition placeholder:text-campus-muted focus:border-campus-green focus:bg-campus-card focus:ring-4 focus:ring-campus-green/10"
             minLength={6}
             name="password"
@@ -121,6 +123,11 @@ export function AuthForm() {
               ? "Sign in"
               : "Create account"}
         </button>
+        {mode === "signup" ? (
+          <p className="text-center text-xs leading-5 text-campus-muted">
+            By creating an account, you agree to the DormDrop Terms and Privacy Policy.
+          </p>
+        ) : null}
       </form>
     </>
   );
