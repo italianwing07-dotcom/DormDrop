@@ -3,6 +3,7 @@ import { ContactSellerActions } from "@/components/contact-seller-actions";
 import { SaveListingButton } from "@/components/save-listing-button";
 import { MessageSellerButton } from "@/components/message-seller-button";
 import { ListingImageGallery } from "@/components/listing-image-gallery";
+import { ReportListingButton } from "@/components/report-listing-button";
 import { formatPostedDate } from "@/lib/format-date";
 import type { Listing } from "@/lib/listings";
 import { getListing } from "@/lib/supabase/listings";
@@ -126,6 +127,7 @@ export default async function ListingDetailsPage({ params }: ListingDetailsPageP
               </div>
             </div>
             <ContactSellerActions email={listing.seller.email} title={listing.title} />
+            <ReportListingButton listingId={listing.id} />
           </div>
         </div>
       </section>
