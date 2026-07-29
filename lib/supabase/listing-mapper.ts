@@ -39,8 +39,11 @@ function normalizeImageUrls(imageUrls: unknown, fallbackUrl: string) {
   return [fallbackUrl || fallbackImage];
 }
 
-function formatListingPrice(price: string, category: Listing["type"]) {
-  const trimmedPrice = price.trim();
+function formatListingPrice(
+  price: string | number | null | undefined,
+  category: Listing["type"]
+) {
+  const trimmedPrice = String(price ?? "").trim();
 
   if (category === "Free") {
     return "Free";
@@ -79,7 +82,7 @@ export function mapListingRow(row: ListingRow): Listing {
     ownerId: row.user_id,
     title: row.title,
     type,
-    price: formatListingPrice(row.price || "", type),
+    price: formatListingPrice(row.price, type),
     campus: getCampusDisplayName(row.campus),
     description: row.description,
     image: images[0] ?? fallbackImage,
