@@ -238,10 +238,6 @@ on conflict (id) do update
 set public = true;
 
 drop policy if exists "Anyone can view listing images" on storage.objects;
-create policy "Anyone can view listing images"
-on storage.objects
-for select
-using (bucket_id = 'listing-images');
 
 drop policy if exists "Authenticated users can upload listing images" on storage.objects;
 create policy "Authenticated users can upload listing images"
@@ -272,3 +268,18 @@ grant select, insert, delete on public.saved_listings to authenticated;
 grant select, insert, update on public.conversations to authenticated;
 grant select, insert on public.messages to authenticated;
 grant select, insert on public.reports to authenticated;
+
+do $
+begin
+  if exists (
+    select 1
+    from pg_proc
+    join pg_namespace on pg_namespace.oid = pg_proc.pronamespace
+    where pg_namespace.nspname = 'public'
+      and pg_proc.proname = 'handle_new_user'
+      and pg_get_function_identity_arguments(pg_proc.oid) = ''
+  ) then
+    alter function public.handle_new_user() set search_path = public, auth;
+    revoke execute on function public.handle_new_user() from anon, authenticated, public;
+  end if;
+end $;
