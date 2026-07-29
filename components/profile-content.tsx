@@ -85,13 +85,9 @@ export function ProfileContent() {
       try {
         const supabase = getBrowserSupabaseClient();
         const {
-          data: { user: currentUser },
-          error: userError
-        } = await supabase.auth.getUser();
-
-        if (userError) {
-          throw userError;
-        }
+          data: { session }
+        } = await supabase.auth.getSession();
+        const currentUser = session?.user ?? null;
 
         setUser(currentUser);
 
@@ -129,12 +125,8 @@ export function ProfileContent() {
         setUserListings(data ?? []);
         setSavedListings(mappedSavedListings);
         setSavedCount(mappedSavedListings.length);
-      } catch (caughtError) {
-        setError(
-          caughtError instanceof Error
-            ? caughtError.message
-            : "Could not load your profile."
-        );
+      } catch {
+        setError("Could not load your profile. Please try again.");
       } finally {
         setIsLoading(false);
       }
@@ -259,7 +251,7 @@ export function ProfileContent() {
           <p className="text-sm font-semibold text-campus-coral">Not signed in</p>
           <h1 className="mt-2 text-2xl font-bold tracking-tight">Log in to view your profile</h1>
           <p className="mt-3 text-sm leading-6 text-campus-muted">
-            {error ?? "Your DormDrop profile appears after you sign in."}
+            {error ?? "Please sign in to view your profile."}
           </p>
           <Link
             className="mt-5 inline-flex min-h-12 items-center rounded-[14px] bg-campus-green px-6 text-sm font-semibold text-white transition hover:bg-campus-hover"
