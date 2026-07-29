@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { signOut } from "@/lib/supabase/auth";
-import { supabase } from "@/lib/supabase/client";
+import { getBrowserSupabaseClient } from "@/lib/supabase/browser-client";
 
 export function LogoutButton() {
   const router = useRouter();
@@ -12,12 +12,10 @@ export function LogoutButton() {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   useEffect(() => {
-    if (!supabase) {
-      return;
-    }
+    const supabase = getBrowserSupabaseClient();
 
-    supabase.auth.getUser().then(({ data }) => {
-      setEmail(data.user?.email ?? null);
+    supabase.auth.getSession().then(({ data }) => {
+      setEmail(data.session?.user.email ?? null);
     });
 
     const {

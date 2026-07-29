@@ -1,13 +1,18 @@
 import Link from "next/link";
 import { CategoryButtons } from "@/components/category-buttons";
 import { ListingCard } from "@/components/listing-card";
-import { listings } from "@/lib/listings";
+import { getListings } from "@/lib/supabase/listings";
 
-export default function HomePage() {
-  const activeListings = listings.filter((listing) => !listing.sold).length;
-  const campusCount = new Set(listings.map((listing) => listing.campus)).size;
-  const photoCount = listings.reduce(
-    (count, listing) => count + Math.max(1, listing.images.length),
+export const dynamic = "force-dynamic";
+
+export default async function HomePage() {
+  const listings = await getListings();
+  const activeListingsList = listings.filter((listing) => !listing.sold);
+  const newestListings = activeListingsList.slice(0, 3);
+  const activeListings = activeListingsList.length;
+  const campusCount = new Set(activeListingsList.map((listing) => listing.campus)).size;
+  const photoCount = activeListingsList.reduce(
+    (count, listing) => count + listing.images.filter((image) => image.startsWith("http")).length,
     0
   );
 
@@ -21,7 +26,7 @@ export default function HomePage() {
             </div>
             <div className="space-y-4">
               <h1 className="max-w-3xl text-4xl font-black tracking-tight text-white sm:text-5xl lg:text-6xl">
-                A trusted campus marketplace for dorm essentials.
+                A trusted Fordham marketplace for dorm essentials.
               </h1>
               <p className="max-w-2xl text-base leading-7 text-white/85 sm:text-lg">
                 DormDrop helps students give away, sell, and request dorm items by campus, so useful things stay nearby and move-out feels easier.
@@ -60,31 +65,40 @@ export default function HomePage() {
               <div className="flex items-center justify-between gap-3 border-b border-campus-border pb-3">
                 <div>
                   <p className="text-sm font-bold text-campus-green">Live campus board</p>
-                  <p className="mt-1 text-xs font-semibold text-campus-muted">Sample activity</p>
+                  <p className="mt-1 text-xs font-semibold text-campus-muted">Newest active listings</p>
                 </div>
                 <span className="rounded-[14px] bg-campus-successBg px-3 py-1 text-xs font-black text-campus-success">
-                  Updated
+                  Live
                 </span>
               </div>
               <div className="mt-4 space-y-3">
-                {listings.slice(0, 3).map((listing) => (
-                  <div key={listing.id} className="flex items-center gap-3 rounded-[14px] bg-campus-paper p-3">
-                    <div className="flex size-12 shrink-0 items-center justify-center rounded-[14px] bg-campus-card text-sm font-black text-campus-green shadow-sm">
-                      {listing.type === "Free" ? "$0" : listing.type === "Wanted" ? "Need" : listing.price}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-black text-campus-ink">{listing.title}</p>
-                      <p className="mt-1 truncate text-xs font-semibold text-campus-muted">{listing.campus} / {listing.type}</p>
-                    </div>
+                {newestListings.length > 0 ? (
+                  newestListings.map((listing) => (
+                    <Link key={listing.id} className="flex items-center gap-3 rounded-[14px] bg-campus-paper p-3 transition hover:bg-slate-50" href={"/listings/" + listing.id}>
+                      <div className="flex size-12 shrink-0 items-center justify-center rounded-[14px] bg-campus-card text-sm font-black text-campus-green shadow-sm">
+                        {listing.type === "Free" ? "Free" : listing.type === "Wanted" ? "Need" : listing.price}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-black text-campus-ink">{listing.title}</p>
+                        <p className="mt-1 truncate text-xs font-semibold text-campus-muted">{listing.campus} / {listing.type}</p>
+                      </div>
+                    </Link>
+                  ))
+                ) : (
+                  <div className="rounded-[14px] bg-campus-paper p-5 text-center">
+                    <p className="text-sm font-black text-campus-ink">No listings yet.</p>
+                    <p className="mt-2 text-xs font-semibold leading-5 text-campus-muted">
+                      Be the first student to post an item.
+                    </p>
                   </div>
-                ))}
+                )}
               </div>
             </div>
             <div className="grid grid-cols-3 gap-3 text-center">
               {[
-                ["3", "Categories"],
-                ["6", "Campuses"],
-                ["5", "Photos/post"]
+                [String(activeListings), "Active"],
+                [String(campusCount), "Campuses"],
+                [String(photoCount), "Photos"]
               ].map(([count, label]) => (
                 <div key={label} className="rounded-[14px] border border-campus-border bg-campus-card p-3 shadow-sm">
                   <p className="text-2xl font-black text-campus-green">{count}</p>
@@ -136,11 +150,21 @@ export default function HomePage() {
             View all listings
           </Link>
         </div>
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {listings.slice(0, 3).map((listing) => (
-            <ListingCard key={listing.id} listing={listing} />
-          ))}
-        </div>
+        {newestListings.length > 0 ? (
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {newestListings.map((listing) => (
+              <ListingCard key={listing.id} listing={listing} />
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-[20px] border border-campus-border bg-campus-card p-8 text-center shadow-soft sm:p-10">
+            <p className="text-sm font-bold text-campus-green">No listings yet</p>
+            <h2 className="mt-2 text-2xl font-black tracking-tight">Be the first student to post an item.</h2>
+            <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-campus-muted">
+              Once Fordham students post real DormDrop listings, the newest active items will appear here.
+            </p>
+          </div>
+        )}
       </section>
     </main>
   );

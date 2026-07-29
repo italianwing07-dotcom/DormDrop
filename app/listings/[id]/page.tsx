@@ -119,11 +119,6 @@ export default async function ListingDetailsPage({ params }: ListingDetailsPageP
                 <p className="mt-1 text-sm text-campus-muted">
                   {listing.seller.year} / {listing.seller.dorm}
                 </p>
-                {listing.seller.email ? (
-                  <p className="mt-1 break-all text-sm font-semibold text-campus-ink">
-                    {listing.seller.email}
-                  </p>
-                ) : null}
               </div>
             </div>
             <ContactSellerActions email={listing.seller.email} title={listing.title} />

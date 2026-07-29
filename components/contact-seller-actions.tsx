@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { getBrowserSupabaseClient } from "@/lib/supabase/browser-client";
 
 type ContactSellerActionsProps = {
   email?: string | null;
@@ -9,6 +11,48 @@ type ContactSellerActionsProps = {
 
 export function ContactSellerActions({ email, title }: ContactSellerActionsProps) {
   const [copied, setCopied] = useState(false);
+  const [isCheckingSession, setIsCheckingSession] = useState(true);
+  const [isSignedIn, setIsSignedIn] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    const supabase = getBrowserSupabaseClient();
+
+    supabase.auth.getSession().then(({ data }) => {
+      if (isMounted) {
+        setIsSignedIn(Boolean(data.session?.user));
+        setIsCheckingSession(false);
+      }
+    }).catch(() => {
+      if (isMounted) {
+        setIsSignedIn(false);
+        setIsCheckingSession(false);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  if (isCheckingSession) {
+    return (
+      <p className="mt-5 flex min-h-12 w-full items-center justify-center rounded-[14px] bg-campus-paper px-6 text-sm font-semibold text-campus-muted">
+        Checking seller contact...
+      </p>
+    );
+  }
+
+  if (!isSignedIn) {
+    return (
+      <Link
+        className="mt-5 flex min-h-12 w-full items-center justify-center rounded-[14px] bg-campus-paper px-6 text-sm font-bold text-campus-ink transition hover:bg-slate-50"
+        href="/login"
+      >
+        Sign in to view seller contact info
+      </Link>
+    );
+  }
 
   if (!email) {
     return (

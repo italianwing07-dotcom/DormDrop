@@ -8,7 +8,7 @@ export default function LoginPage() {
           <p className="text-sm font-semibold text-campus-green">Welcome to DormDrop</p>
           <h1 className="text-3xl font-black tracking-tight">Log in or sign up</h1>
           <p className="text-sm leading-6 text-campus-muted">
-            Use your email and password to access your DormDrop profile.
+            Create a verified account with your school email, then sign in to manage listings and messages.
           </p>
         </div>
 

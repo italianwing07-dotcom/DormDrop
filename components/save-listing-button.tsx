@@ -32,13 +32,9 @@ export function SaveListingButton({ listingId, variant = "full" }: SaveListingBu
       try {
         const supabase = getBrowserSupabaseClient();
         const {
-          data: { user },
-          error: userError
-        } = await supabase.auth.getUser();
-
-        if (userError) {
-          throw userError;
-        }
+          data: { session }
+        } = await supabase.auth.getSession();
+        const user = session?.user ?? null;
 
         if (!isMounted) {
           return;
@@ -48,7 +44,6 @@ export function SaveListingButton({ listingId, variant = "full" }: SaveListingBu
 
         if (!user) {
           setIsSaved(false);
-        announceSavedListingChange(listingId, false);
           return;
         }
 
@@ -66,13 +61,9 @@ export function SaveListingButton({ listingId, variant = "full" }: SaveListingBu
         if (isMounted) {
           setIsSaved(Boolean(data));
         }
-      } catch (caughtError) {
+      } catch {
         if (isMounted) {
-          setError(
-            caughtError instanceof Error
-              ? caughtError.message
-              : "Could not load saved status."
-          );
+          setError("Could not load saved status.");
         }
       } finally {
         if (isMounted) {
@@ -92,6 +83,7 @@ export function SaveListingButton({ listingId, variant = "full" }: SaveListingBu
     setError(null);
 
     if (!userId) {
+      setError("Sign in with your school email to save listings.");
       router.push("/login");
       return;
     }
@@ -113,6 +105,7 @@ export function SaveListingButton({ listingId, variant = "full" }: SaveListingBu
         }
 
         setIsSaved(false);
+        announceSavedListingChange(listingId, false);
       } else {
         const { error: insertError } = await supabase
           .from("saved_listings")
@@ -125,12 +118,8 @@ export function SaveListingButton({ listingId, variant = "full" }: SaveListingBu
         setIsSaved(true);
         announceSavedListingChange(listingId, true);
       }
-    } catch (caughtError) {
-      setError(
-        caughtError instanceof Error
-          ? caughtError.message
-          : "Could not update saved listing."
-      );
+    } catch {
+      setError("Could not update saved listing. Please try again.");
     } finally {
       setIsSaving(false);
     }

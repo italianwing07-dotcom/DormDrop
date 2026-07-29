@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { ListingCard } from "@/components/listing-card";
 import { ListingCardSkeleton } from "@/components/listing-card-skeleton";
 import { getCampusFilterOptions, getCampusFilterValue } from "@/lib/campuses";
-import { mapListingRow } from "@/lib/supabase/listings";
+import { mapListingRow } from "@/lib/supabase/listing-mapper";
 import { getBrowserSupabaseClient } from "@/lib/supabase/browser-client";
 import type { ListingRow } from "@/lib/supabase/types";
 import type { User } from "@supabase/supabase-js";

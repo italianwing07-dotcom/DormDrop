@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { getCurrentUser } from "@/lib/supabase/auth";
-import { supabase } from "@/lib/supabase/client";
+import { getBrowserSupabaseClient } from "@/lib/supabase/browser-client";
 
 const reasons = [
   "Prohibited item",
@@ -20,16 +19,16 @@ export function ReportListingButton({ listingId }: { listingId: string }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   async function submitReport() {
-    if (!supabase) {
-      setMessage("Reporting is temporarily unavailable.");
-      return;
-    }
-
     setIsSubmitting(true);
     setMessage(null);
 
     try {
-      const user = await getCurrentUser();
+      const supabase = getBrowserSupabaseClient();
+      const {
+        data: { session }
+      } = await supabase.auth.getSession();
+      const user = session?.user ?? null;
+
       if (!user) {
         setMessage("Sign in with your school email to report this listing.");
         return;

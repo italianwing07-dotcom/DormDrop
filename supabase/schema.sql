@@ -197,6 +197,8 @@ to authenticated
 using (auth.uid() = buyer_id or auth.uid() = seller_id)
 with check (auth.uid() = buyer_id or auth.uid() = seller_id);
 
+drop policy if exists "Users can send messages" on public.messages;
+drop policy if exists "Users see their own messages" on public.messages;
 drop policy if exists "Conversation participants can read messages" on public.messages;
 create policy "Conversation participants can read messages"
 on public.messages
@@ -261,56 +263,12 @@ using (
   and auth.uid()::text = (storage.foldername(name))[1]
 );
 
--- Optional demo data. Keep this commented out in production so rerunning the
--- schema cannot create duplicate marketplace listings.
-/* insert into public.listings
-  (title, description, price, category, campus, image_url)
-values
-  (
-    'Mini fridge',
-    'Compact black mini fridge with a small freezer shelf. Clean, quiet, and ready for pickup before move-out.',
-    '$55',
-    'For Sale',
-    'Fordham',
-    '/listings/mini-fridge.svg'
-  ),
-  (
-    'Desk lamp',
-    'Adjustable LED desk lamp with three brightness settings. Works well for late study sessions.',
-    '$0',
-    'Free',
-    'NYU',
-    '/listings/desk-lamp.svg'
-  ),
-  (
-    'Textbooks',
-    'Intro economics and biology textbooks from this semester. Light highlighting, no missing pages.',
-    '$30',
-    'For Sale',
-    'Columbia',
-    '/listings/textbooks.svg'
-  ),
-  (
-    'Storage bins',
-    'Looking for stackable bins or under-bed storage before move-in weekend. Flexible on pickup.',
-    'Any',
-    'Wanted',
-    'St. John''s',
-    '/listings/storage-bins.svg'
-  ),
-  (
-    'Microwave',
-    'Dorm-size microwave with simple controls. Fits on a small cart or shared suite counter.',
-    '$40',
-    'For Sale',
-    'Boston College',
-    '/listings/microwave.svg'
-  ),
-  (
-    'Dorm chair',
-    'Lightweight saucer chair for a dorm corner. A little worn, still comfy and easy to carry.',
-    '$0',
-    'Free',
-    'Other',
-    '/listings/dorm-chair.svg'
-  ); */
+
+-- Required Data API grants. RLS policies below still control which rows each role can access.
+grant usage on schema public to anon, authenticated;
+grant select on public.listings to anon, authenticated;
+grant insert, update, delete on public.listings to authenticated;
+grant select, insert, delete on public.saved_listings to authenticated;
+grant select, insert, update on public.conversations to authenticated;
+grant select, insert on public.messages to authenticated;
+grant select, insert on public.reports to authenticated;

@@ -10,22 +10,18 @@ import { getBrowserSupabaseClient } from "@/lib/supabase/browser-client";
 import type { ConversationRow, ListingRow, MessageRow } from "@/lib/supabase/types";
 import type { User } from "@supabase/supabase-js";
 
-function formatSupabaseError(error: {
-  message?: string;
-  code?: string;
-  details?: string | null;
-  hint?: string | null;
-}) {
-  return JSON.stringify(
-    {
-      message: error.message,
-      code: error.code,
-      details: error.details,
-      hint: error.hint
-    },
-    null,
-    2
-  );
+function getFriendlyConversationError(caughtError: unknown) {
+  const message = caughtError instanceof Error ? caughtError.message.toLowerCase() : String(caughtError).toLowerCase();
+
+  if (message.includes("row-level security") || message.includes("42501")) {
+    return "You do not have access to this conversation.";
+  }
+
+  if (message.includes("network") || message.includes("failed to fetch")) {
+    return "We couldn't connect to DormDrop right now. Please check your connection and try again.";
+  }
+
+  return "Could not load this conversation. Please try again.";
 }
 
 function formatMessageTime(dateValue: string) {
@@ -54,13 +50,9 @@ export function ConversationThread() {
       try {
         const supabase = getBrowserSupabaseClient();
         const {
-          data: { user: currentUser },
-          error: userError
-        } = await supabase.auth.getUser();
-
-        if (userError) {
-          throw userError;
-        }
+          data: { session }
+        } = await supabase.auth.getSession();
+        const currentUser = session?.user ?? null;
 
         setUser(currentUser);
 
@@ -114,17 +106,11 @@ export function ConversationThread() {
           .update(readPayload)
           .eq("id", conversationId);
 
-        if (readError) {
-          console.error("[DormDrop messaging] Could not mark conversation as read", readError);
-        } else {
+        if (!readError) {
           window.dispatchEvent(new Event("dormdrop:messages-read"));
         }
       } catch (caughtError) {
-        setError(
-          caughtError instanceof Error
-            ? caughtError.message
-            : "Could not load this conversation."
-        );
+        setError(getFriendlyConversationError(caughtError));
       } finally {
         setIsLoading(false);
       }
@@ -152,17 +138,11 @@ export function ConversationThread() {
         .maybeSingle();
 
       if (verifyConversationError) {
-        console.error(
-          "[DormDrop messaging] Reply conversation verification failed",
-          verifyConversationError
-        );
-        throw new Error(formatSupabaseError(verifyConversationError));
+        throw verifyConversationError;
       }
 
       if (!verifiedConversation) {
-        throw new Error(
-          `Conversation ${conversation.id} does not exist or is not readable before reply insert.`
-        );
+        throw new Error("Could not open this conversation before sending.");
       }
 
       const sentAt = new Date().toISOString();
@@ -183,9 +163,6 @@ export function ConversationThread() {
         created_at: sentAt
       };
 
-      console.log("[DormDrop messaging] Reply current user", user);
-      console.log("[DormDrop messaging] Reply verified conversation", verifiedConversation);
-      console.log("[DormDrop messaging] Reply insert payload", messagePayload);
 
       const { data: newMessage, error: messageError } = await supabase
         .from("messages")
@@ -194,11 +171,7 @@ export function ConversationThread() {
         .single();
 
       if (messageError) {
-        console.error("[DormDrop messaging] Reply insert failed", {
-          payload: messagePayload,
-          error: messageError
-        });
-        throw new Error(formatSupabaseError(messageError));
+        throw messageError;
       }
 
       const readPayload =
@@ -212,8 +185,7 @@ export function ConversationThread() {
         .eq("id", conversation.id);
 
       if (updateError) {
-        console.error("[DormDrop messaging] Reply conversation update failed", updateError);
-        throw new Error(formatSupabaseError(updateError));
+        throw updateError;
       }
 
       setMessages((currentMessages) => [...currentMessages, newMessage]);
@@ -224,10 +196,7 @@ export function ConversationThread() {
       );
       setMessage("");
     } catch (caughtError) {
-      console.error("[DormDrop messaging] Reply send failed", caughtError);
-      setError(
-        caughtError instanceof Error ? caughtError.message : String(caughtError)
-      );
+      setError(getFriendlyConversationError(caughtError));
     } finally {
       setIsSending(false);
     }

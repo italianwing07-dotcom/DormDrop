@@ -119,16 +119,11 @@ export function CreateListingForm() {
     const supabase = getBrowserSupabaseClient();
 
     supabase.auth
-      .getUser()
-      .then(({ data, error }) => {
-        if (error) {
-          throw error;
-        }
-
-        setUser(data.user);
+      .getSession()
+      .then(({ data }) => {
+        setUser(data.session?.user ?? null);
       })
-      .catch((caughtError) => {
-        console.error("[DormDrop] Could not load browser auth user", caughtError);
+      .catch(() => {
         setUser(null);
       })
       .finally(() => {
@@ -205,13 +200,9 @@ export function CreateListingForm() {
     try {
       const supabase = getBrowserSupabaseClient();
       const {
-        data: { user: currentUser },
-        error: userError
-      } = await supabase.auth.getUser();
-
-      if (userError) {
-        throw userError;
-      }
+        data: { session }
+      } = await supabase.auth.getSession();
+      const currentUser = session?.user ?? null;
 
       if (!currentUser) {
         router.push("/login");
@@ -242,16 +233,7 @@ export function CreateListingForm() {
               });
 
             if (uploadError) {
-              const uploadMessage = JSON.stringify(
-                {
-                  message: uploadError.message,
-                  name: uploadError.name
-                },
-                null,
-                2
-              );
-
-              console.error("[DormDrop] Supabase Storage upload failed", uploadError);
+              const uploadMessage = uploadError.message || "Image upload failed. Please try a different photo.";
               setUploadError(uploadMessage);
               throw new Error(uploadMessage);
             }
@@ -288,18 +270,7 @@ export function CreateListingForm() {
       const { error: insertError } = await supabase.from("listings").insert(payload);
 
       if (insertError) {
-        throw new Error(
-          JSON.stringify(
-            {
-              message: insertError.message,
-              code: insertError.code,
-              details: insertError.details,
-              hint: insertError.hint
-            },
-            null,
-            2
-          )
-        );
+        throw new Error(insertError.message || "Could not save this listing. Please try again.");
       }
 
       router.push("/browse");
@@ -310,8 +281,7 @@ export function CreateListingForm() {
           ? caughtError.message
           : String(caughtError);
 
-      console.error("[DormDrop] Create listing failed", caughtError);
-      setError(message);
+      setError(message.includes("row-level security") ? "We couldn't save this listing. Please refresh, sign in again, and try once more." : message);
     } finally {
       setIsSubmitting(false);
     }

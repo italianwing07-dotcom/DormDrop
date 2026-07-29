@@ -1,11 +1,7 @@
-import { supabase } from "@/lib/supabase/client";
+import { getBrowserSupabaseClient } from "@/lib/supabase/browser-client";
 
 function getSupabaseClient() {
-  if (!supabase) {
-    throw new Error("connection");
-  }
-
-  return supabase;
+  return getBrowserSupabaseClient();
 }
 
 function requireEduEmail(email: string) {

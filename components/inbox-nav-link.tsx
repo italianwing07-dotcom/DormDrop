@@ -44,21 +44,17 @@ export function InboxNavLink() {
       try {
         const supabase = getBrowserSupabaseClient();
         const {
-          data: { user },
-          error: userError
-        } = await supabase.auth.getUser();
+          data: { session }
+        } = await supabase.auth.getSession();
 
-        if (userError) {
-          throw userError;
-        }
-
-        if (!user) {
+        if (!session?.user) {
           if (isMounted) {
             setUnreadCount(0);
           }
           return;
         }
 
+        const user = session.user;
         const { data: conversations, error: conversationsError } = await supabase
           .from("conversations")
           .select("id, buyer_id, seller_id, buyer_last_read_at, seller_last_read_at")
@@ -97,10 +93,7 @@ export function InboxNavLink() {
         for (const message of (receivedMessages ?? []) as ReceivedMessage[]) {
           const conversation = conversationsById.get(message.conversation_id);
 
-          if (
-            conversation &&
-            isUnreadForUser(conversation, message, user.id)
-          ) {
+          if (conversation && isUnreadForUser(conversation, message, user.id)) {
             unreadConversationIds.add(message.conversation_id);
           }
         }
@@ -108,8 +101,7 @@ export function InboxNavLink() {
         if (isMounted) {
           setUnreadCount(unreadConversationIds.size);
         }
-      } catch (caughtError) {
-        console.error("[DormDrop inbox] Could not load unread count", caughtError);
+      } catch {
         if (isMounted) {
           setUnreadCount(0);
         }

@@ -2,24 +2,29 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import type { User } from "@supabase/supabase-js";
 import { getBrowserSupabaseClient } from "@/lib/supabase/browser-client";
 
-function formatSupabaseError(error: {
-  message?: string;
-  code?: string;
-  details?: string | null;
-  hint?: string | null;
-}) {
-  return JSON.stringify(
-    {
-      message: error.message,
-      code: error.code,
-      details: error.details,
-      hint: error.hint
-    },
-    null,
-    2
-  );
+function isVerifiedUser(user: User) {
+  return Boolean(user.email_confirmed_at || user.confirmed_at);
+}
+
+function getFriendlyMessagingError(caughtError: unknown) {
+  const message = caughtError instanceof Error ? caughtError.message.toLowerCase() : String(caughtError).toLowerCase();
+
+  if (message.includes("row-level security") || message.includes("42501")) {
+    return "We couldn't start that conversation. Please refresh, sign in again, and try once more.";
+  }
+
+  if (message.includes("network") || message.includes("failed to fetch")) {
+    return "We couldn't connect to DormDrop right now. Please check your connection and try again.";
+  }
+
+  if (message.includes("your own listing") || message.includes("message yourself")) {
+    return "You can't message yourself about your own listing.";
+  }
+
+  return "Could not send this message. Please try again.";
 }
 
 export function MessageSellerButton({
@@ -38,33 +43,51 @@ export function MessageSellerButton({
   const [error, setError] = useState<string | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
+  async function getSignedInVerifiedUser() {
+    const supabase = getBrowserSupabaseClient();
+    const {
+      data: { session }
+    } = await supabase.auth.getSession();
+    const user = session?.user ?? null;
+
+    if (!user) {
+      throw new Error("sign-in-required");
+    }
+
+    if (!isVerifiedUser(user)) {
+      throw new Error("email-not-verified");
+    }
+
+    return { supabase, user };
+  }
+
   async function handleOpen() {
     setError(null);
 
     try {
-      const supabase = getBrowserSupabaseClient();
-      const {
-        data: { user },
-        error: userError
-      } = await supabase.auth.getUser();
+      const { user } = await getSignedInVerifiedUser();
 
-      if (userError) {
-        throw userError;
-      }
-
-      if (!user) {
-        router.push("/login");
+      if (user.id === sellerId) {
+        setCurrentUserId(user.id);
         return;
       }
 
       setCurrentUserId(user.id);
       setIsOpen(true);
     } catch (caughtError) {
-      setError(
-        caughtError instanceof Error
-          ? caughtError.message
-          : "Could not start a message."
-      );
+      const messageText = caughtError instanceof Error ? caughtError.message : String(caughtError);
+
+      if (messageText === "sign-in-required") {
+        setError("Sign in with your verified school email to message this seller.");
+        return;
+      }
+
+      if (messageText === "email-not-verified") {
+        setError("Please verify your school email before messaging sellers.");
+        return;
+      }
+
+      setError(getFriendlyMessagingError(caughtError));
     }
   }
 
@@ -79,20 +102,7 @@ export function MessageSellerButton({
     setIsSending(true);
 
     try {
-      const supabase = getBrowserSupabaseClient();
-      const {
-        data: { user },
-        error: userError
-      } = await supabase.auth.getUser();
-
-      if (userError) {
-        throw userError;
-      }
-
-      if (!user) {
-        router.push("/login");
-        return;
-      }
+      const { supabase, user } = await getSignedInVerifiedUser();
 
       if (user.id === sellerId) {
         throw new Error("You cannot message yourself about your own listing.");
@@ -107,14 +117,10 @@ export function MessageSellerButton({
         .maybeSingle();
 
       if (existingError) {
-        console.error("[DormDrop messaging] Existing conversation lookup failed", existingError);
-        throw new Error(formatSupabaseError(existingError));
+        throw existingError;
       }
 
       let conversationId = existingConversation?.id;
-
-      console.log("[DormDrop messaging] Current user", user);
-      console.log("[DormDrop messaging] Existing conversation", existingConversation);
 
       if (!conversationId) {
         const { data: newConversation, error: conversationError } = await supabase
@@ -130,16 +136,14 @@ export function MessageSellerButton({
           .single();
 
         if (conversationError) {
-          console.error("[DormDrop messaging] Conversation insert failed", conversationError);
-          throw new Error(formatSupabaseError(conversationError));
+          throw conversationError;
         }
 
         conversationId = newConversation.id;
-        console.log("[DormDrop messaging] New conversation", newConversation);
       }
 
       if (!conversationId) {
-        throw new Error("No valid conversation_id was available before message insert.");
+        throw new Error("No valid conversation was available before sending.");
       }
 
       const { data: verifiedConversation, error: verifyConversationError } = await supabase
@@ -149,49 +153,34 @@ export function MessageSellerButton({
         .maybeSingle();
 
       if (verifyConversationError) {
-        console.error(
-          "[DormDrop messaging] Conversation verification failed",
-          verifyConversationError
-        );
-        throw new Error(formatSupabaseError(verifyConversationError));
+        throw verifyConversationError;
       }
 
       if (!verifiedConversation) {
-        throw new Error(
-          `Conversation ${conversationId} does not exist or is not readable before message insert.`
-        );
+        throw new Error("Could not open the conversation before sending.");
       }
 
       const sentAt = new Date().toISOString();
       const receiverId = verifiedConversation.seller_id;
 
       if (!receiverId || receiverId === user.id) {
-        throw new Error("Could not determine a valid receiver_id for this message.");
+        throw new Error("Could not determine a valid message recipient.");
       }
-
-      const messagePayload = {
-        conversation_id: conversationId,
-        sender_id: user.id,
-        receiver_id: receiverId,
-        content: trimmedMessage,
-        created_at: sentAt
-      };
-
-      console.log("[DormDrop messaging] Verified conversation", verifiedConversation);
-      console.log("[DormDrop messaging] Message insert payload", messagePayload);
 
       const { error: messageError } = await supabase
         .from("messages")
-        .insert(messagePayload)
+        .insert({
+          conversation_id: conversationId,
+          sender_id: user.id,
+          receiver_id: receiverId,
+          content: trimmedMessage,
+          created_at: sentAt
+        })
         .select("id, conversation_id, sender_id, receiver_id, content, created_at")
         .single();
 
       if (messageError) {
-        console.error("[DormDrop messaging] Message insert failed", {
-          payload: messagePayload,
-          error: messageError
-        });
-        throw new Error(formatSupabaseError(messageError));
+        throw messageError;
       }
 
       const { error: updateError } = await supabase
@@ -203,20 +192,22 @@ export function MessageSellerButton({
         .eq("id", conversationId);
 
       if (updateError) {
-        console.error("[DormDrop messaging] Conversation update failed", updateError);
-        throw new Error(formatSupabaseError(updateError));
+        throw updateError;
       }
 
       setMessage("");
-      router.push(`/inbox/${conversationId}`);
+      router.push("/inbox/" + conversationId);
       router.refresh();
     } catch (caughtError) {
-      console.error("[DormDrop messaging] Send message failed", caughtError);
-      setError(
-        caughtError instanceof Error
-          ? caughtError.message
-          : String(caughtError)
-      );
+      const messageText = caughtError instanceof Error ? caughtError.message : String(caughtError);
+
+      if (messageText === "sign-in-required") {
+        setError("Sign in with your verified school email to message this seller.");
+      } else if (messageText === "email-not-verified") {
+        setError("Please verify your school email before messaging sellers.");
+      } else {
+        setError(getFriendlyMessagingError(caughtError));
+      }
     } finally {
       setIsSending(false);
     }
