@@ -1,22 +1,76 @@
 import { supabase } from "@/lib/supabase/client";
 
+function getSupabaseClient() {
+  if (!supabase) {
+    throw new Error("connection");
+  }
+
+  return supabase;
+}
+
 function requireEduEmail(email: string) {
   const normalizedEmail = email.trim().toLowerCase();
 
   if (!/^[^\s@]+@[^\s@]+\.edu$/.test(normalizedEmail)) {
-    throw new Error("DormDrop accounts require a valid .edu school email address.");
+    throw new Error("edu-email-required");
   }
 
   return normalizedEmail;
 }
 
-export async function signInWithEmail(email: string, password: string) {
-  if (!supabase) {
-    throw new Error("Missing Supabase environment variables.");
+function requireStrongPassword(password: string) {
+  if (password.length < 8) {
+    throw new Error("weak-password");
+  }
+}
+
+export function getFriendlyAuthError(caughtError: unknown) {
+  const message =
+    caughtError instanceof Error ? caughtError.message.toLowerCase() : String(caughtError).toLowerCase();
+
+  if (message.includes("edu-email-required")) {
+    return "Please use your school .edu email to create a DormDrop account.";
   }
 
-  const { error } = await supabase.auth.signInWithPassword({
-    email,
+  if (message.includes("weak-password") || message.includes("password should be")) {
+    return "Please use a password with at least 8 characters.";
+  }
+
+  if (
+    message.includes("invalid login") ||
+    message.includes("invalid credentials") ||
+    message.includes("email not confirmed")
+  ) {
+    return message.includes("email not confirmed")
+      ? "Please verify your school email before signing in."
+      : "That email and password do not match. Please try again.";
+  }
+
+  if (message.includes("rate") || message.includes("too many") || message.includes("over_email_send_rate_limit")) {
+    return "Too many attempts. Please wait a few minutes before trying again.";
+  }
+
+  if (
+    message.includes("failed to fetch") ||
+    message.includes("network") ||
+    message.includes("connection") ||
+    message.includes("missing supabase")
+  ) {
+    return "We could not connect to DormDrop right now. Please check your connection and try again.";
+  }
+
+  if (message.includes("already registered") || message.includes("user already")) {
+    return "An account may already exist for this email. Try signing in instead.";
+  }
+
+  return "Something went wrong. Please try again.";
+}
+
+export async function signInWithEmail(email: string, password: string) {
+  const client = getSupabaseClient();
+
+  const { error } = await client.auth.signInWithPassword({
+    email: email.trim().toLowerCase(),
     password
   });
 
@@ -25,15 +79,17 @@ export async function signInWithEmail(email: string, password: string) {
   }
 }
 
-export async function signUpWithEmail(email: string, password: string) {
-  if (!supabase) {
-    throw new Error("Missing Supabase environment variables.");
-  }
-
+export async function signUpWithEmail(email: string, password: string, emailRedirectTo: string) {
+  const client = getSupabaseClient();
   const schoolEmail = requireEduEmail(email);
-  const { data, error } = await supabase.auth.signUp({
+  requireStrongPassword(password);
+
+  const { data, error } = await client.auth.signUp({
     email: schoolEmail,
-    password
+    password,
+    options: {
+      emailRedirectTo
+    }
   });
 
   if (error) {
@@ -43,12 +99,27 @@ export async function signUpWithEmail(email: string, password: string) {
   return data.session;
 }
 
-export async function signOut() {
-  if (!supabase) {
-    throw new Error("Missing Supabase environment variables.");
-  }
+export async function resendSignupVerificationEmail(email: string, emailRedirectTo: string) {
+  const client = getSupabaseClient();
+  const schoolEmail = requireEduEmail(email);
 
-  const { error } = await supabase.auth.signOut();
+  const { error } = await client.auth.resend({
+    type: "signup",
+    email: schoolEmail,
+    options: {
+      emailRedirectTo
+    }
+  });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+}
+
+export async function signOut() {
+  const client = getSupabaseClient();
+
+  const { error } = await client.auth.signOut();
 
   if (error) {
     throw new Error(error.message);
@@ -56,11 +127,9 @@ export async function signOut() {
 }
 
 export async function getCurrentUser() {
-  if (!supabase) {
-    throw new Error("Missing Supabase environment variables.");
-  }
+  const client = getSupabaseClient();
 
-  const { data, error } = await supabase.auth.getUser();
+  const { data, error } = await client.auth.getUser();
 
   if (error) {
     throw new Error(error.message);
