@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { CategoryButtons } from "@/components/category-buttons";
 import { ListingCard } from "@/components/listing-card";
+import { getKnownCampusCount } from "@/lib/campuses";
 import { getListings } from "@/lib/supabase/listings";
 
 export const dynamic = "force-dynamic";
@@ -10,7 +11,7 @@ export default async function HomePage() {
   const activeListingsList = listings.filter((listing) => !listing.sold);
   const newestListings = activeListingsList.slice(0, 3);
   const activeListings = activeListingsList.length;
-  const campusCount = new Set(activeListingsList.map((listing) => listing.campus)).size;
+  const campusCount = getKnownCampusCount(activeListingsList.map((listing) => listing.campus));
   const photoCount = activeListingsList.reduce(
     (count, listing) => count + listing.images.filter((image) => image.startsWith("http")).length,
     0
@@ -26,7 +27,7 @@ export default async function HomePage() {
             </div>
             <div className="space-y-4">
               <h1 className="max-w-3xl text-4xl font-black tracking-tight text-white sm:text-5xl lg:text-6xl">
-                A trusted Fordham marketplace for dorm essentials.
+                A trusted campus marketplace for dorm essentials.
               </h1>
               <p className="max-w-2xl text-base leading-7 text-white/85 sm:text-lg">
                 DormDrop helps students give away, sell, and request dorm items by campus, so useful things stay nearby and move-out feels easier.
@@ -161,7 +162,7 @@ export default async function HomePage() {
             <p className="text-sm font-bold text-campus-green">No listings yet</p>
             <h2 className="mt-2 text-2xl font-black tracking-tight">Be the first student to post an item.</h2>
             <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-campus-muted">
-              Once Fordham students post real DormDrop listings, the newest active items will appear here.
+              Once students post real DormDrop listings, the newest active items will appear here.
             </p>
           </div>
         )}

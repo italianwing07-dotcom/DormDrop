@@ -1,4 +1,5 @@
 import { BrowseListings } from "@/components/browse-listings";
+import { getKnownCampusCount } from "@/lib/campuses";
 import { getListings } from "@/lib/supabase/listings";
 
 export const dynamic = "force-dynamic";
@@ -32,7 +33,7 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
               {[
                 [String(listings.length), "Total"],
                 [String(listings.filter((listing) => !listing.sold).length), "Active"],
-                [String(new Set(listings.map((listing) => listing.campus)).size), "Campuses"]
+                [String(getKnownCampusCount(listings.map((listing) => listing.campus))), "Campuses"]
               ].map(([count, label]) => (
                 <div key={label} className="rounded-[14px] bg-white/10 p-3 backdrop-blur">
                   <p className="text-xl font-black text-white">{count}</p>

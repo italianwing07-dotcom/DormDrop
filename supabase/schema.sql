@@ -18,6 +18,14 @@ create table if not exists public.listings (
 alter table public.listings enable row level security;
 
 alter table public.listings
+drop constraint if exists listings_campus_allowed;
+
+alter table public.listings
+add constraint listings_campus_allowed
+check (campus in ('Rose Hill', 'Lincoln Center')) not valid;
+
+
+alter table public.listings
 add column if not exists user_id uuid references auth.users(id) on delete cascade;
 
 alter table public.listings
