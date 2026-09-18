@@ -273,11 +273,16 @@ grant usage on schema public to anon, authenticated;
 grant select on public.listings to anon, authenticated;
 grant insert, update, delete on public.listings to authenticated;
 grant select, insert, delete on public.saved_listings to authenticated;
-grant select, insert, update on public.conversations to authenticated;
+grant select, insert on public.conversations to authenticated;
+-- Participants may update inbox timestamps, but must never replace the other
+-- participant or move message history to a different listing.
+revoke update on public.conversations from public, anon, authenticated;
+grant update (buyer_last_read_at, seller_last_read_at, last_message_at)
+on public.conversations to authenticated;
 grant select, insert on public.messages to authenticated;
 grant select, insert on public.reports to authenticated;
 
-do $
+do $$
 begin
   if exists (
     select 1
@@ -290,4 +295,4 @@ begin
     alter function public.handle_new_user() set search_path = public, auth;
     revoke execute on function public.handle_new_user() from anon, authenticated, public;
   end if;
-end $;
+end $$;
