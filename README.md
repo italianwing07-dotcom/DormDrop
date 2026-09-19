@@ -73,3 +73,22 @@ npm run build
 ```
 
 The app uses only public Supabase browser credentials, with access controlled by Supabase Row Level Security.
+
+## Password Recovery
+
+The sign-in form links to `/forgot-password`. Supabase emails a reset link, and
+`/reset-password` validates the session before letting the user set a new password.
+Expired links lead back to the reset request form. Email requests show the same
+confirmation for existing and unknown accounts.
+
+In Supabase **Authentication → URL Configuration**, keep the Site URL set to the
+production site and add `https://dorm-drop-xi.vercel.app/reset-password` to Redirect
+URLs. For local testing, add `http://localhost:3000/reset-password`. Keep the recovery
+email template's `{{ .ConfirmationURL }}` link so Supabase verifies the reset token.
+The app also handles `PASSWORD_RECOVERY` on the configured Site URL, in case
+Supabase falls back to it. No server or service-role key is needed.
+
+Before release, request a reset for a test account, open the newest email link,
+set a matching password of at least 8 characters, sign out, and sign in with the
+new password. Also check an expired link, mismatched passwords, and a failed email
+request. Build with `npm run build` to verify TypeScript and all routes.
