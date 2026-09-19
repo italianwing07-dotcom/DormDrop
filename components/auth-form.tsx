@@ -212,6 +212,17 @@ export function AuthForm() {
           </div>
         </label>
 
+        {mode === "login" ? (
+          <div className="text-right">
+            <Link
+              className="inline-flex min-h-11 items-center text-sm font-bold text-campus-green underline-offset-4 hover:underline"
+              href="/forgot-password"
+            >
+              Forgot your password?
+            </Link>
+          </div>
+        ) : null}
+
         {mode === "signup" ? (
           <>
             <label className="space-y-2">

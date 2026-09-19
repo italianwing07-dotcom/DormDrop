@@ -23,12 +23,29 @@ function requireStrongPassword(password: string) {
 export function getFriendlyAuthError(caughtError: unknown) {
   const message =
     caughtError instanceof Error ? caughtError.message.toLowerCase() : String(caughtError).toLowerCase();
+  const code =
+    caughtError && typeof caughtError === "object" && "code" in caughtError
+      ? String(caughtError.code)
+      : "";
+
+  if (code === "same_password" || message.includes("different from the old password")) {
+    return "Choose a password different from your current password.";
+  }
+
+  if (
+    code === "session_not_found" ||
+    code === "session_expired" ||
+    code === "refresh_token_not_found" ||
+    message.includes("auth session missing")
+  ) {
+    return "Your reset session has expired. Please request a new password reset link.";
+  }
 
   if (message.includes("edu-email-required")) {
     return "Please use your school .edu email to create a DormDrop account.";
   }
 
-  if (message.includes("weak-password") || message.includes("password should be")) {
+  if (code === "weak_password" || message.includes("weak-password") || message.includes("password should be")) {
     return "Please use a password with at least 8 characters.";
   }
 
@@ -109,6 +126,28 @@ export async function resendSignupVerificationEmail(email: string, emailRedirect
 
   if (error) {
     throw new Error(error.message);
+  }
+}
+
+export async function requestPasswordReset(email: string, redirectTo: string) {
+  const client = getSupabaseClient();
+  const { error } = await client.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
+    redirectTo
+  });
+
+  // Keep the result the same for existing and unknown accounts.
+  if (error && error.code !== "user_not_found") {
+    throw error;
+  }
+}
+
+export async function updatePassword(password: string) {
+  requireStrongPassword(password);
+  const client = getSupabaseClient();
+  const { error } = await client.auth.updateUser({ password });
+
+  if (error) {
+    throw error;
   }
 }
 
