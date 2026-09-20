@@ -9,6 +9,8 @@ import { getCampusDisplayName } from "@/lib/campuses";
 import type { ConversationRow, ListingRow, MessageRow } from "@/lib/supabase/types";
 import type { User } from "@supabase/supabase-js";
 
+import { watchMessages } from "@/lib/supabase/messaging";
+
 type ConversationPreview = {
   conversation: ConversationRow;
   listing?: ListingRow;
@@ -36,22 +38,21 @@ export function InboxContent() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    let active = true;
+    const supabase = getBrowserSupabaseClient();
     async function loadInbox() {
       try {
-        const supabase = getBrowserSupabaseClient();
         const {
-          data: { user: currentUser },
-          error: userError
-        } = await supabase.auth.getUser();
-
-        if (userError) {
-          throw userError;
-        }
+          data: { session }
+        } = await supabase.auth.getSession();
+        if (!active) return;
+        const currentUser = session?.user ?? null;
 
         setUser(currentUser);
 
         if (!currentUser) {
           setPreviews([]);
+          setError(null);
           return;
         }
 
@@ -102,6 +103,8 @@ export function InboxContent() {
           }
         }
 
+        if (!active) return;
+        setError(null);
         setPreviews(
           conversationRows.map((conversation) => {
             const lastMessage = lastMessagesByConversation.get(conversation.id);
@@ -124,15 +127,16 @@ export function InboxContent() {
           })
         );
       } catch (caughtError) {
-        setError(
+        if (active) setError(
           caughtError instanceof Error ? caughtError.message : "Could not load inbox."
         );
       } finally {
-        setIsLoading(false);
+        if (active) setIsLoading(false);
       }
     }
 
-    loadInbox();
+    const stop = watchMessages(supabase, loadInbox, { readUpdates: true });
+    return () => { active = false; stop(); };
   }, []);
 
   if (isLoading) {

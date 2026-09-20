@@ -6,6 +6,8 @@ import { useEffect, useState } from "react";
 import { getBrowserSupabaseClient } from "@/lib/supabase/browser-client";
 import type { ConversationRow, MessageRow } from "@/lib/supabase/types";
 
+import { watchMessages } from "@/lib/supabase/messaging";
+
 type ConversationReadState = Pick<
   ConversationRow,
   "id" | "buyer_id" | "seller_id" | "buyer_last_read_at" | "seller_last_read_at"
@@ -39,10 +41,10 @@ export function InboxNavLink() {
 
   useEffect(() => {
     let isMounted = true;
+    const supabase = getBrowserSupabaseClient();
 
     async function loadUnreadCount() {
       try {
-        const supabase = getBrowserSupabaseClient();
         const {
           data: { session }
         } = await supabase.auth.getSession();
@@ -108,20 +110,8 @@ export function InboxNavLink() {
       }
     }
 
-    loadUnreadCount();
-
-    function handleMessagesRead() {
-      loadUnreadCount();
-    }
-
-    window.addEventListener("dormdrop:messages-read", handleMessagesRead);
-    window.addEventListener("focus", handleMessagesRead);
-
-    return () => {
-      isMounted = false;
-      window.removeEventListener("dormdrop:messages-read", handleMessagesRead);
-      window.removeEventListener("focus", handleMessagesRead);
-    };
+    const stop = watchMessages(supabase, loadUnreadCount, { readUpdates: true });
+    return () => { isMounted = false; stop(); };
   }, [pathname]);
 
   const badgeLabel = unreadCount > 9 ? "9+" : String(unreadCount);

@@ -92,3 +92,54 @@ Before release, request a reset for a test account, open the newest email link,
 set a matching password of at least 8 characters, sign out, and sign in with the
 new password. Also check an expired link, mismatched passwords, and a failed email
 request. Build with `npm run build` to verify TypeScript and all routes.
+
+## Launch readiness update
+
+Messaging now uses server timestamps and a database trigger to save each message
+and update inbox ordering in the same transaction. Clients reuse message IDs on
+retry, reconcile lost responses, and refresh via Supabase Realtime, reconnect,
+tab focus, and a 15-second visible-tab fallback. Send failures preserve the thread
+and draft. Read markers acknowledge only fetched incoming messages.
+
+Photo creation and editing share preparation: up to five original files, 20 MB
+each; HEIC/HEIF conversion is loaded on demand, still images are resized to a
+maximum 1600-pixel edge and encoded as JPEG, and GIFs retain animation up to 5 MB.
+The storage bucket must enforce a 5 MB upload limit and allow only JPEG, PNG,
+WEBP and GIF. HEIC originals are converted before reaching storage.
+
+Admins review reports at `/admin/reports`, also linked from their profile. Removing
+a listing hides it from public browsing while retaining its reports and messages.
+The owner can see its removed status. An admin can restore it. Ordinary users
+cannot read other users' reports or promote themselves to admin.
+
+### Deployment order
+
+1. Apply `supabase/migrations/20260919152913_launch_readiness.sql` to the existing
+   Supabase project **before** deploying the app changes. It changes policies,
+   grants, triggers, Realtime publication membership, and storage restrictions.
+   `supabase/schema.sql` contains the same setup for a new project.
+2. Run `supabase/check-launch-readiness.sql`. This uses generated fixture accounts
+   inside a transaction and rolls them all back; it sends no emails.
+3. Provision the owner's confirmed account as a moderator using the SQL below.
+4. Deploy the matching application revision and run the checks in
+   [docs/launch-checklist.md](docs/launch-checklist.md).
+
+In the Supabase SQL editor, replace the email below with the explicitly selected
+owner account. This is an administrative operation; it is never run from the app.
+
+```sql
+do $$
+declare chosen_user uuid;
+begin
+  select id into strict chosen_user from auth.users
+  where lower(email) = lower('REPLACE_WITH_CONFIRMED_OWNER_EMAIL')
+    and email_confirmed_at is not null;
+  insert into public.moderators(user_id) values (chosen_user) on conflict do nothing;
+end $$;
+```
+
+`npm test` includes isolated Postgres tests of the real application policies,
+triggers, and moderation functions, plus component tests for message retries,
+updates, unread badges, report actions and photo preparation. The isolated
+database models Supabase-owned auth/storage interfaces; live Realtime transport,
+storage HTTP enforcement and device photo decoding need the post-deploy checks.

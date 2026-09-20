@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { User } from "@supabase/supabase-js";
 import { getBrowserSupabaseClient } from "@/lib/supabase/browser-client";
+
+import { getOrCreateConversation, sendMessage, MAX_MESSAGE_LENGTH } from "@/lib/supabase/messaging";
 
 function isVerifiedUser(user: User) {
   return Boolean(user.email_confirmed_at || user.confirmed_at);
@@ -37,6 +39,8 @@ export function MessageSellerButton({
   sellerId?: string | null;
 }) {
   const router = useRouter();
+  const sending = useRef(false);
+  const attempt = useRef<{ id: string; content: string; sender: string } | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [message, setMessage] = useState("");
   const [isSending, setIsSending] = useState(false);
@@ -94,11 +98,12 @@ export function MessageSellerButton({
   async function handleSend() {
     const trimmedMessage = message.trim();
 
-    if (!trimmedMessage || !sellerId) {
+    if (!trimmedMessage || !sellerId || sending.current) {
       return;
     }
 
     setError(null);
+    sending.current = true;
     setIsSending(true);
 
     try {
@@ -108,93 +113,16 @@ export function MessageSellerButton({
         throw new Error("You cannot message yourself about your own listing.");
       }
 
-      const { data: existingConversation, error: existingError } = await supabase
-        .from("conversations")
-        .select("*")
-        .eq("listing_id", listingId)
-        .eq("buyer_id", user.id)
-        .eq("seller_id", sellerId)
-        .maybeSingle();
-
-      if (existingError) {
-        throw existingError;
+      const conversation = await getOrCreateConversation(supabase, listingId, user.id, sellerId);
+      if (!attempt.current || attempt.current.content !== trimmedMessage || attempt.current.sender !== user.id) {
+        attempt.current = { id: crypto.randomUUID(), content: trimmedMessage, sender: user.id };
       }
-
-      let conversationId = existingConversation?.id;
-
-      if (!conversationId) {
-        const { data: newConversation, error: conversationError } = await supabase
-          .from("conversations")
-          .insert({
-            listing_id: listingId,
-            buyer_id: user.id,
-            seller_id: sellerId,
-            buyer_last_read_at: new Date().toISOString(),
-            seller_last_read_at: null
-          })
-          .select("*")
-          .single();
-
-        if (conversationError) {
-          throw conversationError;
-        }
-
-        conversationId = newConversation.id;
-      }
-
-      if (!conversationId) {
-        throw new Error("No valid conversation was available before sending.");
-      }
-
-      const { data: verifiedConversation, error: verifyConversationError } = await supabase
-        .from("conversations")
-        .select("id, buyer_id, seller_id, listing_id")
-        .eq("id", conversationId)
-        .maybeSingle();
-
-      if (verifyConversationError) {
-        throw verifyConversationError;
-      }
-
-      if (!verifiedConversation) {
-        throw new Error("Could not open the conversation before sending.");
-      }
-
-      const sentAt = new Date().toISOString();
-      const receiverId = verifiedConversation.seller_id;
-
-      if (!receiverId || receiverId === user.id) {
-        throw new Error("Could not determine a valid message recipient.");
-      }
-
-      const { error: messageError } = await supabase
-        .from("messages")
-        .insert({
-          conversation_id: conversationId,
-          sender_id: user.id,
-          receiver_id: receiverId,
-          content: trimmedMessage,
-          created_at: sentAt
-        })
-        .select("id, conversation_id, sender_id, receiver_id, content, created_at")
-        .single();
-
-      if (messageError) {
-        throw messageError;
-      }
-
-      const { error: updateError } = await supabase
-        .from("conversations")
-        .update({
-          last_message_at: sentAt,
-          buyer_last_read_at: sentAt
-        })
-        .eq("id", conversationId);
-
-      if (updateError) {
-        throw updateError;
-      }
-
+      await sendMessage(supabase, {
+        id: attempt.current.id, conversation_id: conversation.id,
+        sender_id: user.id, receiver_id: sellerId, content: trimmedMessage
+      });
+      attempt.current = null;
+      const conversationId = conversation.id;
       setMessage("");
       router.push("/inbox/" + conversationId);
       router.refresh();
@@ -209,6 +137,7 @@ export function MessageSellerButton({
         setError(getFriendlyMessagingError(caughtError));
       }
     } finally {
+      sending.current = false;
       setIsSending(false);
     }
   }
@@ -247,6 +176,8 @@ export function MessageSellerButton({
             </span>
             <textarea
               className="min-h-28 w-full rounded-[14px] border border-campus-border px-4 py-3 text-sm outline-none transition focus:border-campus-green focus:ring-4 focus:ring-campus-green/10"
+              disabled={isSending}
+              maxLength={MAX_MESSAGE_LENGTH}
               onChange={(event) => setMessage(event.target.value)}
               placeholder="Hi, is this still available?"
               value={message}
@@ -263,7 +194,7 @@ export function MessageSellerButton({
         </div>
       )}
       {error ? (
-        <p className="text-sm font-medium leading-6 text-campus-coral">{error}</p>
+        <p role="alert" className="text-sm font-medium leading-6 text-campus-coral">{error}</p>
       ) : null}
     </div>
   );

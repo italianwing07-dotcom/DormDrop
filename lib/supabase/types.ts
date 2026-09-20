@@ -91,9 +91,11 @@ export type ReportRow = {
   details: string | null;
   status: "open" | "reviewed" | "resolved";
   created_at: string;
+  reviewed_at: string | null;
+  reviewed_by: string | null;
 };
 
-export type NewReport = Omit<ReportRow, "id" | "status" | "created_at"> & {
+export type NewReport = Omit<ReportRow, "id" | "status" | "created_at" | "reviewed_at" | "reviewed_by"> & {
   id?: string;
   status?: ReportRow["status"];
   created_at?: string;
@@ -129,12 +131,27 @@ export type Database = {
       reports: {
         Row: ReportRow;
         Insert: NewReport;
-        Update: Partial<NewReport>;
+        Update: Partial<NewReport> & { reviewed_at?: string | null; reviewed_by?: string | null };
+        Relationships: [];
+      };
+      moderators: {
+        Row: { user_id: string; created_at: string };
+        Insert: { user_id: string; created_at?: string };
+        Update: never;
+        Relationships: [];
+      };
+      hidden_listings: {
+        Row: { listing_id: string; hidden_at: string };
+        Insert: { listing_id: string; hidden_at?: string };
+        Update: never;
         Relationships: [];
       };
     };
     Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Functions: {
+      is_moderator: { Args: Record<string, never>; Returns: boolean };
+      review_report: { Args: { report_id: string; action: "dismiss" | "remove" | "restore" }; Returns: undefined };
+    };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;
   };
