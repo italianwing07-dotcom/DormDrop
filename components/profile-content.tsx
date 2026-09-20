@@ -27,6 +27,9 @@ export function ProfileContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [moderator, setModerator] = useState(false);
+  const [reportCount, setReportCount] = useState(0);
+  const [hiddenIds, setHiddenIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     function handleSavedListingsChanged(event: Event) {
@@ -122,6 +125,16 @@ export function ProfileContent() {
           .map((savedListing) => savedListing.listings)
           .filter((listing): listing is ListingRow => Boolean(listing));
 
+        const membership = await supabase.rpc("is_moderator");
+        setModerator(!membership.error && Boolean(membership.data));
+        if (membership.data) {
+          const open = await supabase.from("reports").select("id", { count: "exact", head: true }).eq("status", "open");
+          setReportCount(open.count ?? 0);
+        }
+        if (data?.length) {
+          const hidden = await supabase.from("hidden_listings").select("listing_id").in("listing_id", data.map((row) => row.id));
+          setHiddenIds(new Set((hidden.data ?? []).map((row) => row.listing_id)));
+        }
         setUserListings(data ?? []);
         setSavedListings(mappedSavedListings);
         setSavedCount(mappedSavedListings.length);
@@ -295,6 +308,7 @@ export function ProfileContent() {
               <p className="truncate text-sm text-campus-muted">{user.email}</p>
             </div>
           </div>
+          {moderator ? <Link href="/admin/reports" className="mt-5 flex min-h-12 items-center justify-between rounded-[14px] bg-campus-green px-4 font-semibold text-white">Review reported listings <span>{reportCount} open</span></Link> : null}
           <div className="mt-6 grid grid-cols-3 gap-3 text-center">
             {[
               [String(listingCount), "Posts"],
@@ -396,6 +410,7 @@ export function ProfileContent() {
 
                 return (
                   <div className="space-y-3" key={listing.id}>
+                    {hiddenIds.has(listing.id) ? <p className="rounded-[14px] bg-campus-coral/10 p-3 text-sm">Removed after review. Contact <a className="underline" href="mailto:dormdrop.support@gmail.com">DormDrop support</a> with any questions.</p> : null}
                     <ListingCard listing={listing} />
                     <div className="grid grid-cols-1 gap-2 min-[380px]:grid-cols-2">
                       <Link

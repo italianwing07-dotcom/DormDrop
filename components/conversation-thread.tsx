@@ -3,12 +3,14 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ListingImagePlaceholder, isPlaceholderImageUrl } from "@/components/listing-image-placeholder";
 import { getCampusDisplayName } from "@/lib/campuses";
 import { getBrowserSupabaseClient } from "@/lib/supabase/browser-client";
 import type { ConversationRow, ListingRow, MessageRow } from "@/lib/supabase/types";
 import type { User } from "@supabase/supabase-js";
+
+import { mergeMessages, sendMessage, watchMessages, MAX_MESSAGE_LENGTH } from "@/lib/supabase/messaging";
 
 function getFriendlyConversationError(caughtError: unknown) {
   const message = caughtError instanceof Error ? caughtError.message.toLowerCase() : String(caughtError).toLowerCase();
@@ -44,160 +46,101 @@ export function ConversationThread() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [sendError, setSendError] = useState<string | null>(null);
+  const sending = useRef(false);
+  const attempt = useRef<{ id: string; content: string; sender: string; conversationId: string } | null>(null);
+  const scroller = useRef<HTMLDivElement | null>(null);
+  const followLatest = useRef(true);
 
   useEffect(() => {
+    let active = true;
+    let loadedUserId: string | null = null;
+    const supabase = getBrowserSupabaseClient();
+    setIsLoading(true);
+    setConversation(null);
+    setMessages([]);
+    setMessage("");
+    setSendError(null);
+    attempt.current = null;
+    followLatest.current = true;
     async function loadThread() {
       try {
-        const supabase = getBrowserSupabaseClient();
-        const {
-          data: { session }
-        } = await supabase.auth.getSession();
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!active) return;
         const currentUser = session?.user ?? null;
-
         setUser(currentUser);
-
-        if (!currentUser) {
-          return;
+        if (loadedUserId !== (currentUser?.id ?? null)) {
+          setMessages([]);
+          setConversation(null);
+          setMessage("");
+          attempt.current = null;
         }
-
+        loadedUserId = currentUser?.id ?? null;
+        if (!currentUser) { setError(null); return; }
         const { data: conversationData, error: conversationError } = await supabase
-          .from("conversations")
-          .select("*")
-          .eq("id", conversationId)
-          .single();
-
-        if (conversationError) {
-          throw conversationError;
-        }
-
+          .from("conversations").select("*").eq("id", conversationId).single();
+        if (conversationError) throw conversationError;
+        const [listingResult, messageResult] = await Promise.all([
+          supabase.from("listings").select("*").eq("id", conversationData.listing_id).maybeSingle(),
+          supabase.from("messages").select("*").eq("conversation_id", conversationId)
+            .order("created_at", { ascending: true })
+        ]);
+        if (listingResult.error) throw listingResult.error;
+        if (messageResult.error) throw messageResult.error;
+        if (!active) return;
         setConversation(conversationData);
-
-        const { data: listingData, error: listingError } = await supabase
-          .from("listings")
-          .select("*")
-          .eq("id", conversationData.listing_id)
-          .maybeSingle();
-
-        if (listingError) {
-          throw listingError;
-        }
-
-        setListing(listingData);
-
-        const { data: messagesData, error: messagesError } = await supabase
-          .from("messages")
-          .select("*")
-          .eq("conversation_id", conversationId)
-          .order("created_at", { ascending: true });
-
-        if (messagesError) {
-          throw messagesError;
-        }
-
-        setMessages(messagesData ?? []);
-
-        const readPayload =
-          conversationData.buyer_id === currentUser.id
-            ? { buyer_last_read_at: new Date().toISOString() }
-            : { seller_last_read_at: new Date().toISOString() };
-
-        const { error: readError } = await supabase
-          .from("conversations")
-          .update(readPayload)
-          .eq("id", conversationId);
-
-        if (!readError) {
-          window.dispatchEvent(new Event("dormdrop:messages-read"));
+        setListing(listingResult.data);
+        setMessages((current) => mergeMessages(current, messageResult.data ?? []));
+        setError(null);
+        // Only acknowledge messages that were actually fetched while the tab was visible.
+        const received = (messageResult.data ?? []).filter((item) => item.receiver_id === currentUser.id);
+        const lastSeen = received.at(-1)?.created_at;
+        const readColumn = conversationData.buyer_id === currentUser.id ? "buyer_last_read_at" : "seller_last_read_at";
+        const previousRead = conversationData[readColumn];
+        if (lastSeen && (!previousRead || lastSeen > previousRead) && document.visibilityState !== "hidden") {
+          const { error: readError } = await supabase.from("conversations")
+            .update(readColumn === "buyer_last_read_at" ? { buyer_last_read_at: lastSeen } : { seller_last_read_at: lastSeen })
+            .eq("id", conversationId);
+          if (!readError && active) window.dispatchEvent(new Event("dormdrop:messages-read"));
         }
       } catch (caughtError) {
-        setError(getFriendlyConversationError(caughtError));
+        if (active) setError(getFriendlyConversationError(caughtError));
       } finally {
-        setIsLoading(false);
+        if (active) setIsLoading(false);
       }
     }
-
-    loadThread();
+    const stop = watchMessages(supabase, loadThread, { conversationId });
+    return () => { active = false; stop(); };
   }, [conversationId]);
 
+  useEffect(() => {
+    if (followLatest.current && scroller.current) scroller.current.scrollTop = scroller.current.scrollHeight;
+  }, [messages]);
+
   async function handleSend() {
-    const trimmedMessage = message.trim();
-
-    if (!trimmedMessage || !user || !conversation) {
-      return;
-    }
-
-    setError(null);
+    const content = message.trim();
+    if (!content || !user || !conversation || sending.current) return;
+    sending.current = true;
     setIsSending(true);
-
+    setSendError(null);
     try {
-      const supabase = getBrowserSupabaseClient();
-      const { data: verifiedConversation, error: verifyConversationError } = await supabase
-        .from("conversations")
-        .select("id, buyer_id, seller_id, listing_id")
-        .eq("id", conversation.id)
-        .maybeSingle();
-
-      if (verifyConversationError) {
-        throw verifyConversationError;
+      if (!attempt.current || attempt.current.content !== content || attempt.current.sender !== user.id ||
+          attempt.current.conversationId !== conversationId) {
+        attempt.current = { id: crypto.randomUUID(), content, sender: user.id, conversationId };
       }
-
-      if (!verifiedConversation) {
-        throw new Error("Could not open this conversation before sending.");
-      }
-
-      const sentAt = new Date().toISOString();
-      const receiverId =
-        verifiedConversation.buyer_id === user.id
-          ? verifiedConversation.seller_id
-          : verifiedConversation.buyer_id;
-
-      if (!receiverId || receiverId === user.id) {
-        throw new Error("Could not determine a valid receiver_id for this reply.");
-      }
-
-      const messagePayload = {
-        conversation_id: conversation.id,
-        sender_id: user.id,
-        receiver_id: receiverId,
-        content: trimmedMessage,
-        created_at: sentAt
-      };
-
-
-      const { data: newMessage, error: messageError } = await supabase
-        .from("messages")
-        .insert(messagePayload)
-        .select("id, conversation_id, sender_id, receiver_id, content, created_at")
-        .single();
-
-      if (messageError) {
-        throw messageError;
-      }
-
-      const readPayload =
-        conversation.buyer_id === user.id
-          ? { last_message_at: sentAt, buyer_last_read_at: sentAt }
-          : { last_message_at: sentAt, seller_last_read_at: sentAt };
-
-      const { error: updateError } = await supabase
-        .from("conversations")
-        .update(readPayload)
-        .eq("id", conversation.id);
-
-      if (updateError) {
-        throw updateError;
-      }
-
-      setMessages((currentMessages) => [...currentMessages, newMessage]);
-      setConversation((currentConversation) =>
-        currentConversation
-          ? { ...currentConversation, ...readPayload, last_message_at: sentAt }
-          : currentConversation
-      );
+      const sent = await sendMessage(getBrowserSupabaseClient(), {
+        id: attempt.current.id, conversation_id: conversationId, sender_id: user.id,
+        receiver_id: conversation.buyer_id === user.id ? conversation.seller_id : conversation.buyer_id,
+        content
+      });
+      followLatest.current = true;
+      setMessages((current) => mergeMessages(current, [sent]));
       setMessage("");
-    } catch (caughtError) {
-      setError(getFriendlyConversationError(caughtError));
+      attempt.current = null;
+    } catch {
+      setSendError("We couldn't confirm that your message was sent. Check your connection and try again.");
     } finally {
+      sending.current = false;
       setIsSending(false);
     }
   }
@@ -231,7 +174,7 @@ export function ConversationThread() {
     );
   }
 
-  if (error || !conversation) {
+  if (!conversation) {
     return (
       <main className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 lg:px-8">
         <section className="rounded-[20px] border border-campus-border bg-campus-card p-6 shadow-soft">
@@ -288,7 +231,10 @@ export function ConversationThread() {
         </div>
 
         <div className="space-y-4 rounded-[20px] border border-campus-border bg-campus-card p-3 shadow-soft sm:p-5">
-          <div className="max-h-[52svh] space-y-3 overflow-y-auto pr-1 sm:max-h-[55vh]">
+          {error ? <p role="status" className="text-sm text-campus-coral">Messages could not refresh. Reconnecting automatically…</p> : null}
+          <div ref={scroller} role="log" aria-label="Conversation messages" aria-live="polite"
+            onScroll={() => { const el = scroller.current; if (el) followLatest.current = el.scrollHeight - el.scrollTop - el.clientHeight < 100; }}
+            className="max-h-[52svh] space-y-3 overflow-y-auto pr-1 sm:max-h-[55vh]">
             {messages.length > 0 ? (
               messages.map((threadMessage) => {
                 const isMine = threadMessage.sender_id === user.id;
@@ -311,7 +257,7 @@ export function ConversationThread() {
                         {formatMessageTime(threadMessage.created_at)}
                       </p>
                     </div>
-                    <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-campus-muted">
+                    <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-6 text-campus-muted">
                       {threadMessage.content}
                     </p>
                   </div>
@@ -330,14 +276,16 @@ export function ConversationThread() {
             <span className="text-sm font-semibold">Reply</span>
             <textarea
               className="min-h-32 w-full rounded-[14px] border border-campus-border px-4 py-3 text-base outline-none transition focus:border-campus-green focus:ring-4 focus:ring-campus-green/10 sm:min-h-28 sm:text-sm"
+              disabled={isSending}
+              maxLength={MAX_MESSAGE_LENGTH}
               onChange={(event) => setMessage(event.target.value)}
               placeholder="Write a message..."
               value={message}
             />
           </label>
-          {error ? (
-            <div className="rounded-[14px] bg-campus-coral/10 p-4 text-sm font-medium leading-6 text-campus-ink">
-              {error}
+          {sendError ? (
+            <div role="alert" className="rounded-[14px] bg-campus-coral/10 p-4 text-sm font-medium leading-6 text-campus-ink">
+              {sendError}
             </div>
           ) : null}
           <button

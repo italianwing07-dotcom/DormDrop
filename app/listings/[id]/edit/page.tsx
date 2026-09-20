@@ -15,40 +15,12 @@ const placeholderImages: Record<ListingCategory, string> = {
   "For Sale": "",
   Wanted: ""
 };
-const supportedImageTypes = [
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-  "image/gif"
-];
-const supportedImageExtensions = ["jpg", "jpeg", "png", "webp", "gif"];
-const unsupportedHeicMessage =
-  "HEIC photos are not supported yet. Please upload JPG, PNG, WEBP, or GIF.";
+import { prepareListingPhoto, PHOTO_ACCEPT } from "@/lib/listing-photos";
+import { normalizeListingPrice } from "@/lib/listing-price";
 
 type PhotoItem =
   | { id: string; type: "existing"; url: string }
   | { id: string; type: "new"; file: File; previewUrl: string };
-
-function isSupportedImageFile(file: File) {
-  const extension = file.name.split(".").pop()?.toLowerCase() ?? "";
-  const hasSupportedExtension = supportedImageExtensions.includes(extension);
-  const hasSupportedType = !file.type || supportedImageTypes.includes(file.type);
-
-  return hasSupportedExtension && hasSupportedType;
-}
-
-function hasUnsupportedHeicFile(files: File[]) {
-  return files.some((file) => {
-    const extension = file.name.split(".").pop()?.toLowerCase() ?? "";
-
-    return (
-      extension === "heic" ||
-      extension === "heif" ||
-      file.type === "image/heic" ||
-      file.type === "image/heif"
-    );
-  });
-}
 
 function moveArrayItem<T>(items: T[], fromIndex: number, toIndex: number) {
   if (toIndex < 0 || toIndex >= items.length) {
@@ -140,13 +112,18 @@ export default function EditListingPage() {
   const [error, setError] = useState<string | null>(null);
   const imageInputRef = useRef<HTMLInputElement | null>(null);
   const photosRef = useRef<PhotoItem[]>([]);
+  const preparing = useRef(false);
+  const mounted = useRef(true);
+  const [isPreparingPhotos, setIsPreparingPhotos] = useState(false);
 
   useEffect(() => {
     photosRef.current = photos;
   }, [photos]);
 
   useEffect(() => {
+    mounted.current = true;
     return () => {
+      mounted.current = false;
       photosRef.current.forEach(revokePhotoPreview);
     };
   }, []);
@@ -200,44 +177,32 @@ export default function EditListingPage() {
     loadListing();
   }, [listingId]);
 
-  function handleImageChange(event: React.ChangeEvent<HTMLInputElement>) {
+  async function handleImageChange(event: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(event.target.files ?? []);
-    setError(null);
-
-    if (hasUnsupportedHeicFile(files)) {
-      event.target.value = "";
-      setError(unsupportedHeicMessage);
-      return;
-    }
-
-    const unsupportedFile = files.find((file) => !isSupportedImageFile(file));
-
-    if (unsupportedFile) {
-      event.target.value = "";
-      setError("Please upload JPG, PNG, WEBP, or GIF images only.");
-      return;
-    }
-
-    setPhotos((currentPhotos) => {
-      const availableSlots = Math.max(0, 5 - currentPhotos.length);
-
-      if (availableSlots === 0) {
-        setError("You can upload up to 5 photos. Remove a photo before adding another.");
-        return currentPhotos;
-      }
-
-      const filesToAdd = files.slice(0, availableSlots);
-
-      if (filesToAdd.length < files.length) {
-        setError("You can upload up to 5 photos. Only the first available slots were added.");
-      }
-
-      return [...currentPhotos, ...filesToAdd.map(makeNewPhoto)];
-    });
     event.target.value = "";
+    if (preparing.current || isSaving || !files.length) return;
+    const slots = Math.max(0, 5 - photosRef.current.length);
+    if (!slots) { setError("You can upload up to 5 photos. Remove a photo before adding another."); return; }
+    preparing.current = true;
+    setIsPreparingPhotos(true);
+    setError(null);
+    const prepared: PhotoItem[] = [];
+    try {
+      for (const file of files.slice(0, slots)) prepared.push(makeNewPhoto(await prepareListingPhoto(file)));
+      if (!mounted.current) { prepared.forEach(revokePhotoPreview); return; }
+      setPhotos((current) => [...current, ...prepared]);
+      if (files.length > slots) setError("Only the first available photo slots were added (5 photos maximum).");
+    } catch (error) {
+      prepared.forEach(revokePhotoPreview);
+      if (mounted.current) setError(error instanceof Error ? error.message : "We couldn't prepare these photos. Please try again.");
+    } finally {
+      preparing.current = false;
+      if (mounted.current) setIsPreparingPhotos(false);
+    }
   }
 
   function handleRemovePhoto(photoId: string) {
+    if (preparing.current || isSaving) return;
     setPhotos((currentPhotos) => {
       const photoToRemove = currentPhotos.find((photo) => photo.id === photoId);
 
@@ -259,6 +224,7 @@ export default function EditListingPage() {
   }
 
   function handleMovePhoto(photoId: string, direction: -1 | 1) {
+    if (preparing.current || isSaving) return;
     setPhotos((currentPhotos) => {
       const currentIndex = currentPhotos.findIndex((photo) => photo.id === photoId);
 
@@ -283,6 +249,7 @@ export default function EditListingPage() {
 
     try {
       const supabase = getBrowserSupabaseClient();
+      const price = normalizeListingPrice(formData.get("price"), category);
       let finalImageUrls: string[] = [];
 
       if (photos.length > 0) {
@@ -293,10 +260,6 @@ export default function EditListingPage() {
             if (photo.type === "existing") {
               finalImageUrls.push(photo.url);
               continue;
-            }
-
-            if (!isSupportedImageFile(photo.file)) {
-              throw new Error("Please upload JPG, PNG, WEBP, or GIF images only.");
             }
 
             const filePath = user.id + "/" + crypto.randomUUID() + "-" + getSafeFileName(photo.file);
@@ -330,7 +293,7 @@ export default function EditListingPage() {
       const payload = {
         title: String(formData.get("title") ?? "").trim(),
         description: String(formData.get("description") ?? "").trim(),
-        price: String(formData.get("price") ?? "").trim(),
+        price,
         category,
         campus: String(formData.get("campus") ?? "").trim(),
         image_url: imageUrl,
@@ -484,6 +447,7 @@ export default function EditListingPage() {
                           disabled={index === 0}
                           onClick={(event) => {
                             event.preventDefault();
+    if (preparing.current || isSaving) return;
                             event.stopPropagation();
                             handleMovePhoto(photo.id, -1);
                           }}
@@ -532,13 +496,16 @@ export default function EditListingPage() {
                   .join(", ")}
               </span>
             ) : null}
-            {isUploadingImage ? (
+            {isPreparingPhotos ? <p role="status" className="mt-3 text-sm font-semibold text-campus-green">Preparing photos…</p> : null}
+        <p className="mt-2 text-xs text-campus-muted">Up to 5 photos, 20 MB each. iPhone photos are converted and large photos are compressed automatically.</p>
+        {isUploadingImage ? (
               <span className="mt-3 text-sm font-semibold text-campus-green">
                 Uploading image...
               </span>
             ) : null}
             <input
-              accept=".jpg,.jpeg,.png,.webp,.gif,image/jpeg,image/png,image/webp,image/gif"
+              accept={PHOTO_ACCEPT}
+          disabled={isPreparingPhotos || isSaving}
               className="sr-only"
               multiple
               name="images"
@@ -591,11 +558,12 @@ export default function EditListingPage() {
               </select>
             </label>
             <label className="space-y-2">
-              <span className="text-sm font-semibold">Price</span>
+              <span className="text-sm font-semibold">Price ($)</span>
               <input
                 className="min-h-12 w-full rounded-[14px] border border-campus-border px-4 outline-none transition focus:border-campus-green focus:ring-4 focus:ring-campus-green/10"
-                defaultValue={listing.price}
+                defaultValue={listing.price ?? 0}
                 name="price"
+            inputMode="decimal"
                 required
                 type="text"
               />
@@ -621,7 +589,7 @@ export default function EditListingPage() {
           <div className="flex flex-col gap-3 sm:flex-row">
             <button
               className="min-h-12 rounded-[14px] bg-campus-green px-6 text-sm font-semibold text-white transition hover:bg-campus-hover disabled:cursor-not-allowed disabled:opacity-70"
-              disabled={isSaving}
+              disabled={isSaving || isPreparingPhotos}
               type="submit"
             >
               {isSaving ? "Saving changes..." : "Save changes"}
