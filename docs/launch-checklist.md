@@ -47,7 +47,7 @@ published as available inventory without an actual item and willing owner.
 
 ## Remaining setup
 
-- Production database update and matching app deployment need approval.
+- Apply the production database update before the matching app deployment.
 - Select the confirmed DormDrop account email to receive moderator membership.
 - Complete the live two-account and phone checks after deployment.
 - Password-recovery URL configuration is deferred separately and is still open.

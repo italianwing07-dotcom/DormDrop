@@ -120,9 +120,11 @@ cannot read other users' reports or promote themselves to admin.
    `supabase/schema.sql` contains the same setup for a new project.
 2. Run `supabase/check-launch-readiness.sql`. This uses generated fixture accounts
    inside a transaction and rolls them all back; it sends no emails.
-3. Provision the owner's confirmed account as a moderator using the SQL below.
-4. Deploy the matching application revision and run the checks in
+3. Deploy the matching application revision and run the checks in
    [docs/launch-checklist.md](docs/launch-checklist.md).
+4. When the owner selects their confirmed account, provision it as a moderator
+   using the SQL below. The app can be deployed before this account is selected;
+   report review stays restricted until membership is assigned.
 
 In the Supabase SQL editor, replace the email below with the explicitly selected
 owner account. This is an administrative operation; it is never run from the app.

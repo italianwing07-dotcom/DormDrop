@@ -10,14 +10,14 @@ grant select on qa_ids to authenticated, anon;
 insert into auth.users (id, instance_id, aud, role, email, email_confirmed_at, raw_app_meta_data, raw_user_meta_data)
 select id, '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
   'dormdrop-qa-' || id || '@example.invalid', now(), '{"provider":"email"}',
-  '{"full_name":"DormDrop QA fixture","campus":"Rose Hill","grad_year":"2028"}'
+  '{"full_name":"DormDrop QA fixture","campus":"rose_hill","grad_year":"2028"}'
 from qa_ids cross join lateral unnest(array[seller,buyer,outsider,moderator]) id;
 insert into public.moderators(user_id) select moderator from qa_ids;
 
 set local role authenticated;
 select set_config('request.jwt.claim.sub', (select seller::text from qa_ids), true);
 insert into public.listings(id,user_id,title,description,price,category,campus,image_url,image_urls)
-select listing,seller,'QA rollback item','Not a real listing','$10','For Sale','Rose Hill','',array[]::text[] from qa_ids;
+select listing,seller,'QA rollback item','Not a real listing','10.00','For Sale','Rose Hill','',array[]::text[] from qa_ids;
 update public.listings set title='QA edited item', sold=true where id=(select listing from qa_ids);
 select pg_temp.assert_ok((select sold and title='QA edited item' from public.listings where id=(select listing from qa_ids)), 'seller can edit and mark sold');
 update public.listings set sold=false where id=(select listing from qa_ids);

@@ -16,6 +16,7 @@ const placeholderImages: Record<ListingCategory, string> = {
   Wanted: ""
 };
 import { prepareListingPhoto, PHOTO_ACCEPT } from "@/lib/listing-photos";
+import { normalizeListingPrice } from "@/lib/listing-price";
 
 type PhotoItem =
   | { id: string; type: "existing"; url: string }
@@ -248,6 +249,7 @@ export default function EditListingPage() {
 
     try {
       const supabase = getBrowserSupabaseClient();
+      const price = normalizeListingPrice(formData.get("price"), category);
       let finalImageUrls: string[] = [];
 
       if (photos.length > 0) {
@@ -291,7 +293,7 @@ export default function EditListingPage() {
       const payload = {
         title: String(formData.get("title") ?? "").trim(),
         description: String(formData.get("description") ?? "").trim(),
-        price: String(formData.get("price") ?? "").trim(),
+        price,
         category,
         campus: String(formData.get("campus") ?? "").trim(),
         image_url: imageUrl,
@@ -556,11 +558,12 @@ export default function EditListingPage() {
               </select>
             </label>
             <label className="space-y-2">
-              <span className="text-sm font-semibold">Price</span>
+              <span className="text-sm font-semibold">Price ($)</span>
               <input
                 className="min-h-12 w-full rounded-[14px] border border-campus-border px-4 outline-none transition focus:border-campus-green focus:ring-4 focus:ring-campus-green/10"
-                defaultValue={listing.price}
+                defaultValue={listing.price ?? 0}
                 name="price"
+            inputMode="decimal"
                 required
                 type="text"
               />

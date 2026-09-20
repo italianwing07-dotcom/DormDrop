@@ -15,6 +15,7 @@ const placeholderImages: Record<ListingCategory, string> = {
 };
 
 import { prepareListingPhoto, PHOTO_ACCEPT } from "@/lib/listing-photos";
+import { normalizeListingPrice } from "@/lib/listing-price";
 
 type PhotoItem =
   | { id: string; type: "existing"; url: string }
@@ -179,6 +180,7 @@ export function CreateListingForm() {
 
       const formData = new FormData(form);
       const category = formData.get("category") as ListingCategory;
+      const price = normalizeListingPrice(formData.get("price"), category);
       let finalImageUrls: string[] = [];
 
       if (photos.length > 0) {
@@ -224,7 +226,7 @@ export function CreateListingForm() {
         user_id: currentUser.id,
         title: String(formData.get("title") ?? "").trim(),
         description: String(formData.get("description") ?? "").trim(),
-        price: String(formData.get("price") ?? "").trim(),
+        price,
         category,
         campus: String(formData.get("campus") ?? "").trim(),
         image_url: imageUrl,
@@ -428,11 +430,13 @@ export function CreateListingForm() {
           </select>
         </label>
         <label className="space-y-2">
-          <span className="text-sm font-semibold">Price</span>
+          <span className="text-sm font-semibold">Price ($)</span>
           <input
             className="min-h-12 w-full rounded-[14px] border border-campus-border px-4 outline-none transition focus:border-campus-green focus:ring-4 focus:ring-campus-green/10"
             name="price"
-            placeholder="$0"
+            inputMode="decimal"
+            placeholder="0.00"
+            defaultValue="0"
             required
             type="text"
           />

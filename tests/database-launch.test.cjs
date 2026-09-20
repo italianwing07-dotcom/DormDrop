@@ -21,6 +21,20 @@ test("buyer/seller lifecycle and moderation privileges in isolated Postgres", as
         id uuid primary key, instance_id uuid, aud text, role text, email text,
         email_confirmed_at timestamptz, raw_app_meta_data jsonb, raw_user_meta_data jsonb
       );
+      -- The live project has a legacy signup profile trigger whose campus uses
+      -- slugs, whereas listings use the display names Rose Hill/Lincoln Center.
+      create table public.profiles (
+        id uuid primary key references auth.users(id) on delete cascade,
+        full_name text, campus text check (campus in ('rose_hill', 'lincoln_center')), grad_year text
+      );
+      create function public.handle_new_user() returns trigger language plpgsql security definer as $$
+      begin
+        insert into public.profiles(id, full_name, campus, grad_year)
+        values (new.id, new.raw_user_meta_data->>'full_name', new.raw_user_meta_data->>'campus', new.raw_user_meta_data->>'grad_year');
+        return new;
+      end;
+      $$;
+      create trigger on_auth_user_created after insert on auth.users for each row execute function public.handle_new_user();
       create schema storage;
       create table storage.buckets (id text primary key, name text, public boolean, file_size_limit bigint, allowed_mime_types text[]);
       create table storage.objects (id uuid primary key default gen_random_uuid(), bucket_id text, name text);
@@ -38,5 +52,11 @@ test("buyer/seller lifecycle and moderation privileges in isolated Postgres", as
     assert.ok(results.some((result) => result.rows.some((row) => String(row.result).startsWith("PASS:"))));
     assert.equal((await db.query("select count(*)::int as count from auth.users")).rows[0].count, 0, "fixtures must be rolled back");
     assert.equal((await db.query("select count(*)::int as count from public.listings")).rows[0].count, 0);
+    // Existing production stores prices as numeric; new schema installs use
+    // text. The same lifecycle must work against both layouts.
+    await db.exec("alter table public.listings alter column price type numeric using price::numeric");
+    const numericResults = await db.exec(fs.readFileSync(path.join(root, "supabase/check-launch-readiness.sql"), "utf8"));
+    assert.ok(numericResults.some((result) => result.rows.some((row) => String(row.result).startsWith("PASS:"))));
+    assert.equal((await db.query("select count(*)::int as count from auth.users")).rows[0].count, 0);
   } finally { await db.close(); }
 });

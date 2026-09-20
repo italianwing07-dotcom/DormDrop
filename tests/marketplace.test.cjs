@@ -226,6 +226,17 @@ test("photo limits reject oversized and non-image files before conversion", () =
   assert.doesNotThrow(() => validatePhoto({ name: "PHONE.HEIC", type: "", size: 100 }));
 });
 
+test("prices accept dollar input but send a numeric decimal to Supabase", () => {
+  const { normalizeListingPrice } = load("lib/listing-price.ts");
+  assert.equal(normalizeListingPrice("$10", "For Sale"), "10.00");
+  assert.equal(normalizeListingPrice("$1,250.50", "For Sale"), "1250.50");
+  assert.equal(normalizeListingPrice("0", "Wanted"), "0.00");
+  assert.equal(normalizeListingPrice("Free", "Free"), "0.00");
+  for (const invalid of ["-10", "10.999", "1,00", "NaN", "ten", ""]) {
+    assert.throws(() => normalizeListingPrice(invalid, "For Sale"), /Enter a price/);
+  }
+});
+
 test("HEIC converts to resized JPEG and releases its preview URL", async () => {
   let converted = 0, revoked = 0, dimensions;
   const canvas = { width: 0, height: 0, getContext: () => ({ fillRect() {}, drawImage() {} }), toBlob(callback) {

@@ -5,7 +5,7 @@ export type ListingRow = {
   user_id: string | null;
   title: string;
   description: string;
-  price: string;
+  price: string | number | null;
   category: ListingCategory;
   campus: string;
   image_url: string;
