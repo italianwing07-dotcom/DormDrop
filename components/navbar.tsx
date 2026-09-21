@@ -32,7 +32,7 @@ export function Navbar() {
             Search
           </button>
         </form>
-        <div className="-mx-1 flex items-center gap-1 overflow-x-auto px-1 pb-1 sm:mx-0 sm:pb-0">
+        <div className="flex flex-wrap items-center gap-1">
           {links.map((link) => (
             <Link
               className="flex min-h-10 shrink-0 items-center rounded-[14px] px-3 py-2 text-sm font-semibold text-campus-muted transition hover:bg-campus-paper hover:text-campus-ink"
