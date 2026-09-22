@@ -11,7 +11,7 @@ type SaveListingButtonProps = {
 
 function announceSavedListingChange(listingId: string, isSaved: boolean) {
   window.dispatchEvent(
-    new CustomEvent("dormdrop:saved-listings-changed", {
+    new CustomEvent("dormloot:saved-listings-changed", {
       detail: { listingId, isSaved }
     })
   );

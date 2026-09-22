@@ -19,7 +19,7 @@ function getFriendlyMessagingError(caughtError: unknown) {
   }
 
   if (message.includes("network") || message.includes("failed to fetch")) {
-    return "We couldn't connect to DormDrop right now. Please check your connection and try again.";
+    return "We couldn't connect to DormLoot right now. Please check your connection and try again.";
   }
 
   if (message.includes("your own listing") || message.includes("message yourself")) {

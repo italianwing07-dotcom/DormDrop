@@ -49,7 +49,7 @@ export function ReportListingButton({ listingId }: { listingId: string }) {
         throw error;
       }
 
-      setMessage("Report submitted. Thank you for helping keep DormDrop safe.");
+      setMessage("Report submitted. Thank you for helping keep DormLoot safe.");
       setDetails("");
     } catch {
       setMessage("We couldn't submit that report. Please try again.");

@@ -1,4 +1,4 @@
-# DormDrop launch checks
+# DormLoot launch checks
 
 ## Automated checks included
 
@@ -48,6 +48,6 @@ published as available inventory without an actual item and willing owner.
 ## Remaining setup
 
 - Apply the production database update before the matching app deployment.
-- Select the confirmed DormDrop account email to receive moderator membership.
+- Select the confirmed DormLoot account email to receive moderator membership.
 - Complete the live two-account and phone checks after deployment.
 - Password-recovery URL configuration is deferred separately and is still open.

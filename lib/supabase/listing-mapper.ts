@@ -92,7 +92,7 @@ export function mapListingRow(row: ListingRow): Listing {
     sold: row.sold ?? false,
     createdAt: row.created_at,
     seller: {
-      name: "DormDrop Student",
+      name: "DormLoot Student",
       dorm: getCampusDisplayName(row.campus),
       year: "Student",
       email: row.seller_email

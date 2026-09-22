@@ -42,7 +42,7 @@ export function getFriendlyAuthError(caughtError: unknown) {
   }
 
   if (message.includes("edu-email-required")) {
-    return "Please use your school .edu email to create a DormDrop account.";
+    return "Please use your school .edu email to create a DormLoot account.";
   }
 
   if (code === "weak_password" || message.includes("weak-password") || message.includes("password should be")) {
@@ -69,7 +69,7 @@ export function getFriendlyAuthError(caughtError: unknown) {
     message.includes("connection") ||
     message.includes("missing supabase")
   ) {
-    return "We could not connect to DormDrop right now. Please check your connection and try again.";
+    return "We could not connect to DormLoot right now. Please check your connection and try again.";
   }
 
   if (message.includes("already registered") || message.includes("user already")) {

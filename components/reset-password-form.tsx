@@ -106,7 +106,7 @@ export function ResetPasswordForm() {
       <div className="space-y-4">
         <div className="space-y-2 rounded-[14px] bg-campus-successBg p-4 text-sm leading-6 text-campus-success" role="status">
           <p className="font-bold">Password updated</p>
-          <p>You’re signed in. Use your new password the next time you sign in to DormDrop.</p>
+          <p>You’re signed in. Use your new password the next time you sign in to DormLoot.</p>
         </div>
         <Link className="flex min-h-12 items-center justify-center rounded-[14px] bg-campus-green px-6 text-sm font-semibold text-white hover:bg-campus-hover" href="/profile">
           Go to your profile

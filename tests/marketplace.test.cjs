@@ -5,7 +5,7 @@ const vm = require("node:vm");
 const { test, beforeEach, afterEach } = require("node:test");
 const ts = require("typescript");
 const { JSDOM } = require("jsdom");
-const dom = new JSDOM("<!doctype html><div id='root'></div>", { url: "https://dormdrop.example/inbox/thread" });
+const dom = new JSDOM("<!doctype html><div id='root'></div>", { url: "https://dormloot.example/inbox/thread" });
 global.window = dom.window;
 global.document = dom.window.document;
 global.FormData = dom.window.FormData;

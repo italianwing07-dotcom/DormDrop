@@ -1,6 +1,6 @@
-# DormDrop
+# DormLoot
 
-DormDrop is a mobile-first student marketplace for giving away, selling, saving, and requesting dorm items by campus. Students can create listings, browse available items, mark their own listings as sold, save listings, and contact sellers by email.
+DormLoot is a mobile-first student marketplace for giving away, selling, saving, and requesting dorm items by campus. Students can create listings, browse available items, mark their own listings as sold, save listings, and contact sellers by email.
 
 ## Tech Stack
 
@@ -82,7 +82,7 @@ Expired links lead back to the reset request form. Email requests show the same
 confirmation for existing and unknown accounts.
 
 In Supabase **Authentication → URL Configuration**, keep the Site URL set to the
-production site and add `https://dorm-drop-xi.vercel.app/reset-password` to Redirect
+production site and add `https://<your-production-domain>/reset-password` to Redirect
 URLs. For local testing, add `http://localhost:3000/reset-password`. Keep the recovery
 email template's `{{ .ConfirmationURL }}` link so Supabase verifies the reset token.
 The app also handles `PASSWORD_RECOVERY` on the configured Site URL, in case

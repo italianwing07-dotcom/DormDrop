@@ -20,7 +20,7 @@ function getFriendlyConversationError(caughtError: unknown) {
   }
 
   if (message.includes("network") || message.includes("failed to fetch")) {
-    return "We couldn't connect to DormDrop right now. Please check your connection and try again.";
+    return "We couldn't connect to DormLoot right now. Please check your connection and try again.";
   }
 
   return "Could not load this conversation. Please try again.";
@@ -101,7 +101,7 @@ export function ConversationThread() {
           const { error: readError } = await supabase.from("conversations")
             .update(readColumn === "buyer_last_read_at" ? { buyer_last_read_at: lastSeen } : { seller_last_read_at: lastSeen })
             .eq("id", conversationId);
-          if (!readError && active) window.dispatchEvent(new Event("dormdrop:messages-read"));
+          if (!readError && active) window.dispatchEvent(new Event("dormloot:messages-read"));
         }
       } catch (caughtError) {
         if (active) setError(getFriendlyConversationError(caughtError));
@@ -222,7 +222,7 @@ export function ConversationThread() {
           <div className="min-w-0">
             <p className="text-sm font-semibold text-campus-green">Message thread</p>
             <h1 className="truncate text-xl font-bold tracking-tight sm:text-2xl">
-              {listing?.title ?? "DormDrop listing"}
+              {listing?.title ?? "DormLoot listing"}
             </h1>
             <p className="mt-1 text-sm text-campus-muted">
               {getCampusDisplayName(listing?.campus)}

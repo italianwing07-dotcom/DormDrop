@@ -95,7 +95,7 @@ export function ModerationDashboard() {
       {error ? <p role="alert" className="mt-4 rounded-[14px] bg-campus-coral/10 p-4 text-sm">{error}</p> : null}
       {access === "loading" ? <p className="mt-5">{loading ? "Checking access…" : "Unable to check access."}</p> : null}
       {access === "login" ? <p className="mt-5">Sign in with your admin account to review reports. <Link className="font-semibold text-campus-green underline" href="/login">Sign in</Link></p> : null}
-      {access === "denied" ? <p className="mt-5">This page is available to DormDrop admins only.</p> : null}
+      {access === "denied" ? <p className="mt-5">This page is available to DormLoot admins only.</p> : null}
       {(access === "allowed" || error) ? <button className={`${buttonClass} mt-4`} disabled={loading || Boolean(pending)} onClick={() => setRefresh((value) => value + 1)}>Refresh reports</button> : null}
       {access === "allowed" ? <>
         <p className="mt-3 text-sm text-campus-muted">Review the listing and report details, then keep or remove the listing. Removed listings can be restored.</p>

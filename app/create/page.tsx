@@ -10,7 +10,7 @@ export default function CreateListingPage() {
             Post a dorm item
           </h1>
           <p className="mt-2 text-sm leading-6 text-campus-muted">
-            Add the item details. DormDrop will save this listing to Supabase.
+            Add the item details. DormLoot will save this listing to Supabase.
           </p>
         </div>
 

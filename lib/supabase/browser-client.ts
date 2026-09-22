@@ -5,7 +5,7 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
 
 declare global {
-  var dormDropSupabase:
+  var dormLootSupabase:
     | ReturnType<typeof createClient<Database>>
     | undefined;
 }
@@ -19,8 +19,8 @@ export function getBrowserSupabaseClient() {
     throw new Error("The browser Supabase client can only be used in the browser.");
   }
 
-  if (!globalThis.dormDropSupabase) {
-    globalThis.dormDropSupabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
+  if (!globalThis.dormLootSupabase) {
+    globalThis.dormLootSupabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
       auth: {
         autoRefreshToken: true,
         detectSessionInUrl: true,
@@ -29,5 +29,5 @@ export function getBrowserSupabaseClient() {
     });
   }
 
-  return globalThis.dormDropSupabase;
+  return globalThis.dormLootSupabase;
 }

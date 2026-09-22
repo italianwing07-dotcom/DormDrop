@@ -216,7 +216,7 @@ export function InboxContent() {
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
                     <div className="min-w-0">
                       <h2 className="truncate font-bold tracking-tight">
-                        {listing?.title ?? "DormDrop listing"}
+                        {listing?.title ?? "DormLoot listing"}
                       </h2>
                       <p className="mt-1 text-sm text-campus-muted">
                         {getCampusDisplayName(listing?.campus)}

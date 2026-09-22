@@ -327,7 +327,7 @@ export default function EditListingPage() {
           .remove(storagePathsToRemove);
 
         if (removeStorageError) {
-          console.error("[DormDrop images] Could not remove old storage images", removeStorageError);
+          console.error("[DormLoot images] Could not remove old storage images", removeStorageError);
         }
       }
 
@@ -403,7 +403,7 @@ export default function EditListingPage() {
             Update your dorm item
           </h1>
           <p className="text-sm leading-6 text-campus-muted">
-            Changes will be saved to your DormDrop listing.
+            Changes will be saved to your DormLoot listing.
           </p>
         </div>
 
