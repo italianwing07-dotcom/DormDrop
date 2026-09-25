@@ -72,7 +72,7 @@ export function watchMessages(client: Client, refresh: () => Promise<void>, opti
     }, requestRefresh);
   if (options.readUpdates) {
     channel.on("postgres_changes", { event: "UPDATE", schema: "public", table: "conversations" }, requestRefresh);
-    window.addEventListener("dormdrop:messages-read", requestRefresh);
+    window.addEventListener("dormloot:messages-read", requestRefresh);
   }
   channel.subscribe((status) => { if (status === "SUBSCRIBED") requestRefresh(); });
   // Keep the auth callback synchronous; do Supabase work after it releases its lock.
@@ -87,7 +87,7 @@ export function watchMessages(client: Client, refresh: () => Promise<void>, opti
     window.clearInterval(timer);
     window.removeEventListener("focus", visibleRefresh);
     window.removeEventListener("online", visibleRefresh);
-    window.removeEventListener("dormdrop:messages-read", requestRefresh);
+    window.removeEventListener("dormloot:messages-read", requestRefresh);
     document.removeEventListener("visibilitychange", visibleRefresh);
     auth.data.subscription.unsubscribe();
     void client.removeChannel(channel);

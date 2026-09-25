@@ -38,7 +38,7 @@ export default async function ListingDetailsPage({ params }: ListingDetailsPageP
         <section className="rounded-[20px] border border-campus-border bg-campus-card p-6 shadow-soft">
           <p className="text-sm font-semibold text-campus-coral">Listing not found</p>
           <h1 className="mt-2 text-2xl font-bold tracking-tight">
-            This DormDrop listing is not available
+            This DormLoot listing is not available
           </h1>
           <p className="mt-3 text-sm leading-6 text-campus-muted">
             It may have been removed or the link may be incorrect.

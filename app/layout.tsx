@@ -5,7 +5,7 @@ import { Footer } from "@/components/footer";
 import { PasswordRecoveryRedirect } from "@/components/password-recovery-redirect";
 
 export const metadata: Metadata = {
-  title: "DormDrop",
+  title: "DormLoot",
   description: "A campus marketplace for dorm essentials."
 };
 

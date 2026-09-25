@@ -274,7 +274,7 @@ export function CreateListingForm() {
         <p className="text-sm font-semibold text-campus-coral">Login required</p>
         <h2 className="mt-2 text-2xl font-bold tracking-tight">Sign in to create a listing</h2>
         <p className="mt-3 text-sm leading-6 text-campus-muted">
-          DormDrop listings are connected to your account so they can appear on your profile.
+          DormLoot listings are connected to your account so they can appear on your profile.
         </p>
         <Link
           className="mt-5 inline-flex min-h-12 items-center rounded-[14px] bg-campus-green px-6 text-sm font-semibold text-white transition hover:bg-campus-hover"

@@ -71,13 +71,13 @@ export function ProfileContent() {
     }
 
     window.addEventListener(
-      "dormdrop:saved-listings-changed",
+      "dormloot:saved-listings-changed",
       handleSavedListingsChanged
     );
 
     return () => {
       window.removeEventListener(
-        "dormdrop:saved-listings-changed",
+        "dormloot:saved-listings-changed",
         handleSavedListingsChanged
       );
     };
@@ -304,7 +304,7 @@ export function ProfileContent() {
             </div>
             <div className="min-w-0">
               <p className="text-sm font-semibold text-campus-green">Student profile</p>
-              <h1 className="text-xl font-bold tracking-tight sm:text-2xl">DormDrop Student</h1>
+              <h1 className="text-xl font-bold tracking-tight sm:text-2xl">DormLoot Student</h1>
               <p className="truncate text-sm text-campus-muted">{user.email}</p>
             </div>
           </div>
@@ -410,7 +410,7 @@ export function ProfileContent() {
 
                 return (
                   <div className="space-y-3" key={listing.id}>
-                    {hiddenIds.has(listing.id) ? <p className="rounded-[14px] bg-campus-coral/10 p-3 text-sm">Removed after review. Contact <a className="underline" href="mailto:dormdrop.support@gmail.com">DormDrop support</a> with any questions.</p> : null}
+                    {hiddenIds.has(listing.id) ? <p className="rounded-[14px] bg-campus-coral/10 p-3 text-sm">Removed after review. Contact <a className="underline" href="mailto:dormdrop.support@gmail.com">DormLoot support</a> with any questions.</p> : null}
                     <ListingCard listing={listing} />
                     <div className="grid grid-cols-1 gap-2 min-[380px]:grid-cols-2">
                       <Link

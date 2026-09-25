@@ -9,8 +9,8 @@ grant select on qa_ids to authenticated, anon;
 
 insert into auth.users (id, instance_id, aud, role, email, email_confirmed_at, raw_app_meta_data, raw_user_meta_data)
 select id, '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
-  'dormdrop-qa-' || id || '@example.invalid', now(), '{"provider":"email"}',
-  '{"full_name":"DormDrop QA fixture","campus":"rose_hill","grad_year":"2028"}'
+  'dormloot-qa-' || id || '@example.invalid', now(), '{"provider":"email"}',
+  '{"full_name":"DormLoot QA fixture","campus":"rose_hill","grad_year":"2028"}'
 from qa_ids cross join lateral unnest(array[seller,buyer,outsider,moderator]) id;
 insert into public.moderators(user_id) select moderator from qa_ids;
 

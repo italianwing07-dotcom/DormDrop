@@ -16,7 +16,7 @@ export function Navbar() {
           <span className="flex size-9 items-center justify-center rounded-[14px] bg-gradient-to-br from-campus-green to-campus-dark text-sm font-black text-white shadow-sm">
             D
           </span>
-          <span className="text-lg font-black tracking-tight">DormDrop</span>
+          <span className="text-lg font-black tracking-tight">DormLoot</span>
         </Link>
         <form action="/browse" className="hidden min-w-64 flex-1 items-center gap-2 rounded-[14px] border border-campus-border bg-campus-paper p-1 lg:flex lg:max-w-sm">
           <input

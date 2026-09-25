@@ -58,7 +58,7 @@ export function AuthForm() {
       }
 
       if (!email.endsWith(".edu")) {
-        setError("Please use your school .edu email to create a DormDrop account.");
+        setError("Please use your school .edu email to create a DormLoot account.");
         return;
       }
 
@@ -115,7 +115,7 @@ export function AuthForm() {
         <div className="space-y-2">
           <p className="text-sm font-semibold text-campus-green">Check your school email</p>
           <h2 className="text-2xl font-black tracking-tight text-campus-ink">
-            Verify your DormDrop account
+            Verify your DormLoot account
           </h2>
           <p className="text-sm leading-6 text-campus-muted">
             We sent a verification link to <span className="font-bold text-campus-ink">{pendingVerificationEmail}</span>. Open it to finish creating your account and return to your profile.
@@ -256,7 +256,7 @@ export function AuthForm() {
                 type="checkbox"
               />
               <span>
-                I agree to the DormDrop <Link className="font-bold text-campus-green" href="/terms">Terms</Link> and <Link className="font-bold text-campus-green" href="/privacy">Privacy Policy</Link>.
+                I agree to the DormLoot <Link className="font-bold text-campus-green" href="/terms">Terms</Link> and <Link className="font-bold text-campus-green" href="/privacy">Privacy Policy</Link>.
               </span>
             </label>
           </>

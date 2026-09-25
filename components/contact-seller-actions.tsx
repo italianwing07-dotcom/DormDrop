@@ -76,9 +76,9 @@ export function ContactSellerActions({ email, title }: ContactSellerActionsProps
       <a
         className="flex min-h-12 w-full items-center justify-center rounded-[14px] bg-campus-green px-6 text-sm font-bold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-campus-hover hover:shadow-md"
         href={`mailto:${email}?subject=${encodeURIComponent(
-          `Interested in your DormDrop listing: ${title}`
+          `Interested in your DormLoot listing: ${title}`
         )}&body=${encodeURIComponent(
-          `Hi, I'm interested in your listing "${title}" on DormDrop.`
+          `Hi, I'm interested in your listing "${title}" on DormLoot.`
         )}`}
       >
         Contact seller

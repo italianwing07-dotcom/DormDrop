@@ -26,7 +26,7 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
                 Find dorm items from students nearby.
               </h1>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-white/85 sm:text-base sm:leading-7">
-                Search by item, filter by campus, and browse Free, For Sale, and Wanted posts from the DormDrop community.
+                Search by item, filter by campus, and browse Free, For Sale, and Wanted posts from the DormLoot community.
               </p>
             </div>
             <div className="grid grid-cols-3 gap-2 text-center sm:w-80">
@@ -49,9 +49,9 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
         ) : (
           <div className="rounded-[20px] border border-campus-border bg-campus-card p-8 text-center shadow-soft sm:p-10">
             <p className="text-sm font-bold text-campus-green">No listings found</p>
-            <h2 className="mt-2 text-2xl font-black tracking-tight">DormDrop is ready for the first post.</h2>
+            <h2 className="mt-2 text-2xl font-black tracking-tight">DormLoot is ready for the first post.</h2>
             <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-campus-muted">
-              Create the first DormDrop listing to fill this page with useful dorm items.
+              Create the first DormLoot listing to fill this page with useful dorm items.
             </p>
           </div>
         )}

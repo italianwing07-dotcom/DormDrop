@@ -8,7 +8,7 @@ export default function ForgotPasswordPage() {
           <p className="text-sm font-semibold text-campus-green">Account access</p>
           <h1 className="text-3xl font-black tracking-tight">Forgot your password?</h1>
           <p className="text-sm leading-6 text-campus-muted">
-            Enter the email address you use for DormDrop. We’ll send you a link to reset your password.
+            Enter the email address you use for DormLoot. We’ll send you a link to reset your password.
           </p>
         </div>
         <ForgotPasswordForm />

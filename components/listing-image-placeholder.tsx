@@ -55,7 +55,7 @@ export function ListingImagePlaceholder({
           {title}
         </p>
         <p className="mt-1 text-[11px] font-bold uppercase tracking-[0.16em] text-campus-muted">
-          {category ?? "DormDrop"}
+          {category ?? "DormLoot"}
         </p>
       </div>
     </div>

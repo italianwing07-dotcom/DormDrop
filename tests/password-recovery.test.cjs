@@ -9,7 +9,7 @@ const { JSDOM } = require("jsdom");
 // Component tests with isolated, fake auth responses. No emails are sent and no
 // real account/session/password is used or changed by this test suite.
 const dom = new JSDOM("<!doctype html><div id='root'></div>", {
-  url: "https://dormdrop.example/reset-password"
+  url: "https://dormloot.example/reset-password"
 });
 global.window = dom.window;
 global.document = dom.window.document;
@@ -97,7 +97,7 @@ test("reset requests normalize the email and use the current site's password pag
   await submit();
   assert.equal(calls[0][0], "recover");
   assert.equal(calls[0][1], "student@fordham.edu");
-  assert.equal(calls[0][2].redirectTo, "https://dormdrop.example/reset-password");
+  assert.equal(calls[0][2].redirectTo, "https://dormloot.example/reset-password");
   assert.match(document.querySelector('[role="status"]').textContent, /If an account exists/);
 });
 

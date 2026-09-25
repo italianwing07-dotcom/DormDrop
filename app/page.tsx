@@ -30,7 +30,7 @@ export default async function HomePage() {
                 A trusted campus marketplace for dorm essentials.
               </h1>
               <p className="max-w-2xl text-base leading-7 text-white/85 sm:text-lg">
-                DormDrop helps students give away, sell, and request dorm items by campus, so useful things stay nearby and move-out feels easier.
+                DormLoot helps students give away, sell, and request dorm items by campus, so useful things stay nearby and move-out feels easier.
               </p>
             </div>
             <div className="flex flex-col gap-3 sm:flex-row">
@@ -114,7 +114,7 @@ export default async function HomePage() {
       <section className="grid gap-3 sm:grid-cols-3">
         {[
           [String(activeListings), "Active listings", "Dorm items currently available or requested."],
-          [String(campusCount), "Campuses", "School communities represented on DormDrop."],
+          [String(campusCount), "Campuses", "School communities represented on DormLoot."],
           [String(photoCount), "Photos shared", "Real item photos and listing visuals in the marketplace."]
         ].map(([value, label, description]) => (
           <div
@@ -162,7 +162,7 @@ export default async function HomePage() {
             <p className="text-sm font-bold text-campus-green">No listings yet</p>
             <h2 className="mt-2 text-2xl font-black tracking-tight">Be the first student to post an item.</h2>
             <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-campus-muted">
-              Once students post real DormDrop listings, the newest active items will appear here.
+              Once students post real DormLoot listings, the newest active items will appear here.
             </p>
           </div>
         )}
