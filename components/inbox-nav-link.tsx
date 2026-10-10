@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { ChatCircle } from "@phosphor-icons/react";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { getBrowserSupabaseClient } from "@/lib/supabase/browser-client";
@@ -35,7 +36,7 @@ function isUnreadForUser(
   return !lastReadAt || new Date(message.created_at) > new Date(lastReadAt);
 }
 
-export function InboxNavLink() {
+export function InboxNavLink({ compact = false }: { compact?: boolean }) {
   const pathname = usePathname();
   const [unreadCount, setUnreadCount] = useState(0);
 
@@ -115,20 +116,51 @@ export function InboxNavLink() {
   }, [pathname]);
 
   const badgeLabel = unreadCount > 9 ? "9+" : String(unreadCount);
+  const unreadSuffix = unreadCount > 0 ? `, ${unreadCount} unread` : "";
+  const active = pathname === "/inbox" || pathname.startsWith("/inbox/");
+
+  if (compact) {
+    return (
+      <Link
+        aria-current={active ? "page" : undefined}
+        aria-label={`Inbox${unreadSuffix}`}
+        className={
+          "relative flex min-h-14 flex-col items-center justify-center gap-1 text-[11px] font-medium transition " +
+          (active ? "text-campus-brand" : "text-campus-muted")
+        }
+        href="/inbox"
+      >
+        <span className="relative">
+          <ChatCircle size={21} weight={active ? "fill" : "regular"} />
+          {unreadCount > 0 ? (
+            <span className="absolute -right-2 -top-1 flex min-w-4 items-center justify-center rounded-full bg-campus-danger px-1 text-[10px] font-semibold leading-4 text-white">
+              {badgeLabel}
+            </span>
+          ) : null}
+        </span>
+        Inbox
+      </Link>
+    );
+  }
 
   return (
     <Link
-      className="relative flex min-h-10 shrink-0 items-center rounded-[14px] px-3 py-2 text-sm font-semibold text-campus-muted transition hover:bg-campus-paper hover:text-campus-ink"
+      aria-current={active ? "page" : undefined}
+      aria-label={`Inbox${unreadSuffix}`}
+      className={
+        "relative flex min-h-10 shrink-0 items-center gap-1.5 rounded-ctl px-3 text-sm font-medium transition " +
+        (active
+          ? "bg-campus-soft text-campus-brand"
+          : "text-campus-muted hover:bg-campus-surface hover:text-campus-ink")
+      }
       href="/inbox"
     >
-      <span className="inline-flex items-center gap-1.5">
-        Inbox
-        {unreadCount > 0 ? (
-          <span className="flex min-w-5 items-center justify-center rounded-[14px] bg-campus-coral px-1.5 py-0.5 text-[10px] font-black leading-none text-white">
-            {badgeLabel}
-          </span>
-        ) : null}
-      </span>
+      Inbox
+      {unreadCount > 0 ? (
+        <span className="flex min-w-5 items-center justify-center rounded-full bg-campus-danger px-1.5 py-0.5 text-[10px] font-semibold leading-none text-white">
+          {badgeLabel}
+        </span>
+      ) : null}
     </Link>
   );
 }

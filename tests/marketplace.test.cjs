@@ -24,6 +24,8 @@ function load(relative, mocks = {}, globals = {}) {
   const builtins = {
     "@/lib/supabase/browser-client": { getBrowserSupabaseClient: () => client },
     "next/link": { __esModule: true, default: (props) => React.createElement("a", props) },
+    // Icon package ships ESM only; the component tests care about behaviour, not glyphs.
+    "@phosphor-icons/react": new Proxy({}, { get: () => () => null }),
     "next/image": { __esModule: true, default: (props) => React.createElement("img", props) },
     "next/navigation": { useParams: () => ({ id: "thread" }), usePathname: () => "/inbox", useRouter: () => ({ push: (url) => calls.push(["navigate", url]), refresh() {} }) },
     ...mocks
@@ -33,6 +35,7 @@ function load(relative, mocks = {}, globals = {}) {
     crypto: require("node:crypto").webcrypto, queueMicrotask, URL, File, Blob, console,
     require: (name) => {
       if (builtins[name]) return builtins[name];
+      if (name.startsWith("@phosphor-icons/react")) return builtins["@phosphor-icons/react"];
       if (name.startsWith("@/")) {
         const file = name.slice(2);
         return load(file + (fs.existsSync(path.resolve(__dirname, "..", file + ".ts")) ? ".ts" : ".tsx"), mocks, globals);

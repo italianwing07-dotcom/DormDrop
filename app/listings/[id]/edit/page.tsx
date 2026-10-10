@@ -347,11 +347,11 @@ export default function EditListingPage() {
   if (isLoading) {
     return (
       <main className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 lg:px-8">
-        <div className="space-y-5 rounded-[20px] border border-campus-border bg-campus-card p-4 shadow-soft sm:p-6">
-          <div className="h-8 w-48 rounded-[14px] bg-slate-50" />
-          <div className="h-44 rounded-[20px] bg-slate-50" />
-          <div className="h-12 rounded-[14px] bg-slate-50" />
-          <div className="h-32 rounded-[14px] bg-slate-50" />
+        <div className="space-y-5 rounded-card border border-campus-border bg-campus-card p-4 shadow-card sm:p-6">
+          <div className="h-8 w-48 rounded-ctl bg-campus-surface" />
+          <div className="h-44 rounded-card bg-campus-surface" />
+          <div className="h-12 rounded-ctl bg-campus-surface" />
+          <div className="h-32 rounded-ctl bg-campus-surface" />
         </div>
       </main>
     );
@@ -360,11 +360,11 @@ export default function EditListingPage() {
   if (!user) {
     return (
       <main className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 lg:px-8">
-        <section className="rounded-[20px] border border-campus-border bg-campus-card p-6 shadow-soft">
-          <p className="text-sm font-semibold text-campus-coral">Login required</p>
-          <h1 className="mt-2 text-2xl font-bold tracking-tight">Sign in to edit this listing</h1>
+        <section className="rounded-card border border-campus-border bg-campus-card p-6 shadow-card">
+          <p className="text-sm font-semibold text-campus-danger">Login required</p>
+          <h1 className="mt-2 text-2xl font-semibold tracking-tight">Sign in to edit this listing</h1>
           <Link
-            className="mt-5 inline-flex min-h-12 items-center rounded-[14px] bg-campus-green px-6 text-sm font-semibold text-white transition hover:bg-campus-hover"
+            className="mt-5 inline-flex min-h-12 items-center rounded-ctl bg-campus-brand px-6 text-sm font-semibold text-white transition hover:bg-campus-brandHover"
             href="/login"
           >
             Go to login
@@ -377,14 +377,14 @@ export default function EditListingPage() {
   if (!listing) {
     return (
       <main className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 lg:px-8">
-        <section className="rounded-[20px] border border-campus-border bg-campus-card p-6 shadow-soft">
-          <p className="text-sm font-semibold text-campus-coral">Listing unavailable</p>
-          <h1 className="mt-2 text-2xl font-bold tracking-tight">You cannot edit this listing</h1>
+        <section className="rounded-card border border-campus-border bg-campus-card p-6 shadow-card">
+          <p className="text-sm font-semibold text-campus-danger">Listing unavailable</p>
+          <h1 className="mt-2 text-2xl font-semibold tracking-tight">You cannot edit this listing</h1>
           <p className="mt-3 text-sm leading-6 text-campus-muted">
             {error ?? "Only the owner can access this edit page."}
           </p>
           <Link
-            className="mt-5 inline-flex min-h-12 items-center rounded-[14px] bg-campus-green px-6 text-sm font-semibold text-white transition hover:bg-campus-hover"
+            className="mt-5 inline-flex min-h-12 items-center rounded-ctl bg-campus-brand px-6 text-sm font-semibold text-white transition hover:bg-campus-brandHover"
             href="/profile"
           >
             Back to profile
@@ -398,8 +398,8 @@ export default function EditListingPage() {
     <main className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 lg:px-8">
       <section className="space-y-6">
         <div className="space-y-2">
-          <p className="text-sm font-semibold text-campus-green">Edit listing</p>
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
+          <p className="text-sm font-semibold text-campus-brand">Edit listing</p>
+          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
             Update your dorm item
           </h1>
           <p className="text-sm leading-6 text-campus-muted">
@@ -408,16 +408,16 @@ export default function EditListingPage() {
         </div>
 
         <form
-          className="space-y-5 rounded-[20px] border border-campus-border bg-campus-card p-4 shadow-soft sm:p-6"
+          className="space-y-5 rounded-card border border-campus-border bg-campus-card p-4 shadow-card sm:p-6"
           onSubmit={handleSubmit}
         >
-          <div className="flex min-h-44 flex-col items-center justify-center rounded-[20px] border-2 border-dashed border-campus-border bg-campus-paper p-4 text-center transition hover:border-campus-green hover:bg-slate-50 sm:p-6">
+          <div className="flex min-h-44 flex-col items-center justify-center rounded-card border-2 border-dashed border-campus-border bg-campus-paper p-4 text-center transition hover:border-campus-brand hover:bg-campus-surface sm:p-6">
             <span className="text-sm font-bold text-campus-ink">Listing image</span>
             <span className="mt-2 max-w-sm text-sm leading-6 text-campus-muted">
               Upload up to 5 new photos, or keep the current images.
             </span>
             <button
-              className="mt-4 min-h-12 rounded-[14px] bg-campus-card px-5 py-2 text-sm font-bold text-campus-ink shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+              className="mt-4 min-h-12 rounded-ctl bg-campus-card px-5 py-2 text-sm font-bold text-campus-ink shadow-sm transition hover:bg-campus-surface disabled:cursor-not-allowed disabled:opacity-60"
               disabled={photos.length >= 5}
               onClick={() => imageInputRef.current?.click()}
               type="button"
@@ -430,7 +430,8 @@ export default function EditListingPage() {
                   const imageUrl = photo.type === "existing" ? photo.url : photo.previewUrl;
 
                   return (
-                    <div className="relative overflow-hidden rounded-[14px]" key={photo.id}>
+                    <div className="relative overflow-hidden rounded-ctl" key={photo.id}>
+                      {/* eslint-disable-next-line @next/next/no-img-element -- blob: preview URLs cannot go through the image optimizer */}
                       <img
                         alt={"Listing image " + (index + 1)}
                         className="aspect-[4/3] w-full object-cover"
@@ -438,12 +439,12 @@ export default function EditListingPage() {
                       />
                       <div className="absolute inset-x-2 top-2 flex flex-wrap justify-end gap-1">
                         {index === 0 ? (
-                          <span className="rounded-[14px] bg-campus-green px-2 py-1 text-xs font-bold text-white shadow-sm">
+                          <span className="rounded-ctl bg-campus-brand px-2 py-1 text-xs font-bold text-white shadow-sm">
                             Cover
                           </span>
                         ) : null}
                         <button
-                          className="min-h-8 rounded-[14px] bg-campus-card/95 px-2.5 py-1 text-xs font-bold text-campus-ink shadow-sm transition hover:bg-slate-50 disabled:opacity-50"
+                          className="min-h-8 rounded-ctl bg-campus-card/95 px-2.5 py-1 text-xs font-bold text-campus-ink shadow-sm transition hover:bg-campus-surface disabled:opacity-50"
                           disabled={index === 0}
                           onClick={(event) => {
                             event.preventDefault();
@@ -456,7 +457,7 @@ export default function EditListingPage() {
                           Left
                         </button>
                         <button
-                          className="min-h-8 rounded-[14px] bg-campus-card/95 px-2.5 py-1 text-xs font-bold text-campus-ink shadow-sm transition hover:bg-slate-50 disabled:opacity-50"
+                          className="min-h-8 rounded-ctl bg-campus-card/95 px-2.5 py-1 text-xs font-bold text-campus-ink shadow-sm transition hover:bg-campus-surface disabled:opacity-50"
                           disabled={index === photos.length - 1}
                           onClick={(event) => {
                             event.preventDefault();
@@ -468,7 +469,7 @@ export default function EditListingPage() {
                           Right
                         </button>
                         <button
-                          className="min-h-8 rounded-[14px] bg-campus-card/95 px-2.5 py-1 text-xs font-bold text-campus-coral shadow-sm transition hover:bg-campus-coral hover:text-white"
+                          className="min-h-8 rounded-ctl bg-campus-card/95 px-2.5 py-1 text-xs font-bold text-campus-danger shadow-sm transition hover:bg-campus-danger hover:text-white"
                           onClick={(event) => {
                             event.preventDefault();
                             event.stopPropagation();
@@ -484,11 +485,11 @@ export default function EditListingPage() {
                 })}
               </div>
             ) : null}
-            <span className="mt-3 text-sm font-semibold text-campus-green">
+            <span className="mt-3 text-sm font-semibold text-campus-brand">
               You can upload up to 5 photos. {photos.length}/5 selected.
             </span>
             {photos.some((photo) => photo.type === "new") ? (
-              <span className="text-sm font-semibold text-campus-green">
+              <span className="text-sm font-semibold text-campus-brand">
                 New selected:{" "}
                 {photos
                   .filter((photo): photo is Extract<PhotoItem, { type: "new" }> => photo.type === "new")
@@ -496,10 +497,10 @@ export default function EditListingPage() {
                   .join(", ")}
               </span>
             ) : null}
-            {isPreparingPhotos ? <p role="status" className="mt-3 text-sm font-semibold text-campus-green">Preparing photos…</p> : null}
+            {isPreparingPhotos ? <p role="status" className="mt-3 text-sm font-semibold text-campus-brand">Preparing photos…</p> : null}
         <p className="mt-2 text-xs text-campus-muted">Up to 5 photos, 20 MB each. iPhone photos are converted and large photos are compressed automatically.</p>
         {isUploadingImage ? (
-              <span className="mt-3 text-sm font-semibold text-campus-green">
+              <span className="mt-3 text-sm font-semibold text-campus-brand">
                 Uploading image...
               </span>
             ) : null}
@@ -519,7 +520,7 @@ export default function EditListingPage() {
             <label className="space-y-2">
               <span className="text-sm font-semibold">Listing title</span>
               <input
-                className="min-h-12 w-full rounded-[14px] border border-campus-border px-4 outline-none transition focus:border-campus-green focus:ring-4 focus:ring-campus-green/10"
+                className="min-h-12 w-full rounded-ctl border border-campus-border px-4 outline-none transition focus:border-campus-brand focus:shadow-focus"
                 defaultValue={listing.title}
                 name="title"
                 required
@@ -529,7 +530,7 @@ export default function EditListingPage() {
             <label className="space-y-2">
               <span className="text-sm font-semibold">Campus</span>
               <select
-                className="min-h-12 w-full rounded-[14px] border border-campus-border bg-campus-card px-4 outline-none transition focus:border-campus-green focus:ring-4 focus:ring-campus-green/10"
+                className="min-h-12 w-full rounded-ctl border border-campus-border bg-campus-card px-4 outline-none transition focus:border-campus-brand focus:shadow-focus"
                 defaultValue={getCampusSelectValue(listing.campus)}
                 name="campus"
                 required
@@ -547,7 +548,7 @@ export default function EditListingPage() {
             <label className="space-y-2">
               <span className="text-sm font-semibold">Category</span>
               <select
-                className="min-h-12 w-full rounded-[14px] border border-campus-border bg-campus-card px-4 outline-none transition focus:border-campus-green focus:ring-4 focus:ring-campus-green/10"
+                className="min-h-12 w-full rounded-ctl border border-campus-border bg-campus-card px-4 outline-none transition focus:border-campus-brand focus:shadow-focus"
                 defaultValue={listing.category}
                 name="category"
                 required
@@ -560,7 +561,7 @@ export default function EditListingPage() {
             <label className="space-y-2">
               <span className="text-sm font-semibold">Price ($)</span>
               <input
-                className="min-h-12 w-full rounded-[14px] border border-campus-border px-4 outline-none transition focus:border-campus-green focus:ring-4 focus:ring-campus-green/10"
+                className="min-h-12 w-full rounded-ctl border border-campus-border px-4 outline-none transition focus:border-campus-brand focus:shadow-focus"
                 defaultValue={listing.price ?? 0}
                 name="price"
             inputMode="decimal"
@@ -573,7 +574,7 @@ export default function EditListingPage() {
           <label className="space-y-2">
             <span className="text-sm font-semibold">Description</span>
             <textarea
-              className="min-h-36 w-full rounded-[14px] border border-campus-border px-4 py-3 text-base outline-none transition focus:border-campus-green focus:ring-4 focus:ring-campus-green/10 sm:min-h-32 sm:text-sm"
+              className="min-h-36 w-full rounded-ctl border border-campus-border px-4 py-3 text-base outline-none transition focus:border-campus-brand focus:shadow-focus sm:min-h-32 sm:text-sm"
               defaultValue={listing.description}
               name="description"
               required
@@ -581,21 +582,21 @@ export default function EditListingPage() {
           </label>
 
           {error ? (
-            <div className="rounded-[14px] bg-campus-coral/10 p-4 text-sm font-medium leading-6 text-campus-ink">
+            <div className="rounded-ctl bg-campus-danger/10 p-4 text-sm font-medium leading-6 text-campus-ink">
               {error}
             </div>
           ) : null}
 
           <div className="flex flex-col gap-3 sm:flex-row">
             <button
-              className="min-h-12 rounded-[14px] bg-campus-green px-6 text-sm font-semibold text-white transition hover:bg-campus-hover disabled:cursor-not-allowed disabled:opacity-70"
+              className="min-h-12 rounded-ctl bg-campus-brand px-6 text-sm font-semibold text-white transition hover:bg-campus-brandHover disabled:cursor-not-allowed disabled:opacity-70"
               disabled={isSaving || isPreparingPhotos}
               type="submit"
             >
               {isSaving ? "Saving changes..." : "Save changes"}
             </button>
             <Link
-              className="inline-flex min-h-12 items-center justify-center rounded-[14px] bg-campus-paper px-6 text-sm font-semibold text-campus-ink transition hover:bg-slate-50"
+              className="inline-flex min-h-12 items-center justify-center rounded-ctl bg-campus-paper px-6 text-sm font-semibold text-campus-ink transition hover:bg-campus-surface"
               href={"/listings/" + listing.id}
             >
               Cancel

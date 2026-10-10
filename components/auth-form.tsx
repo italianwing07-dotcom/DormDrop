@@ -108,13 +108,13 @@ export function AuthForm() {
 
   if (pendingVerificationEmail) {
     return (
-      <div className="space-y-5 rounded-[20px] border border-campus-border bg-campus-paper p-5 text-center sm:p-6">
-        <div className="mx-auto flex size-14 items-center justify-center rounded-[18px] bg-campus-card text-2xl font-black text-campus-green shadow-sm">
+      <div className="space-y-5 rounded-card border border-campus-border bg-campus-paper p-5 text-center sm:p-6">
+        <div className="mx-auto flex size-14 items-center justify-center rounded-[18px] bg-campus-card text-2xl font-semibold text-campus-brand shadow-sm">
           @
         </div>
         <div className="space-y-2">
-          <p className="text-sm font-semibold text-campus-green">Check your school email</p>
-          <h2 className="text-2xl font-black tracking-tight text-campus-ink">
+          <p className="text-sm font-semibold text-campus-brand">Check your school email</p>
+          <h2 className="text-2xl font-semibold tracking-tight text-campus-ink">
             Verify your DormLoot account
           </h2>
           <p className="text-sm leading-6 text-campus-muted">
@@ -123,20 +123,20 @@ export function AuthForm() {
         </div>
 
         {message ? (
-          <div className="rounded-[14px] bg-campus-successBg p-4 text-sm font-medium leading-6 text-campus-success">
+          <div className="rounded-ctl bg-campus-successBg p-4 text-sm font-medium leading-6 text-campus-success">
             {message}
           </div>
         ) : null}
 
         {error ? (
-          <div className="rounded-[14px] bg-campus-coral/10 p-4 text-sm font-medium leading-6 text-campus-ink">
+          <div className="rounded-ctl bg-campus-danger/10 p-4 text-sm font-medium leading-6 text-campus-ink">
             {error}
           </div>
         ) : null}
 
         <div className="space-y-3">
           <button
-            className="min-h-12 w-full rounded-[14px] bg-campus-green px-6 text-sm font-semibold text-white transition hover:bg-campus-hover disabled:cursor-not-allowed disabled:opacity-70"
+            className="min-h-12 w-full rounded-ctl bg-campus-brand px-6 text-sm font-semibold text-white transition hover:bg-campus-brandHover disabled:cursor-not-allowed disabled:opacity-70"
             disabled={isResending}
             onClick={handleResendVerificationEmail}
             type="button"
@@ -144,7 +144,7 @@ export function AuthForm() {
             {isResending ? "Sending..." : "Resend verification email"}
           </button>
           <button
-            className="min-h-11 w-full rounded-[14px] border border-campus-border bg-campus-card px-6 text-sm font-semibold text-campus-ink transition hover:bg-slate-50"
+            className="min-h-11 w-full rounded-ctl border border-campus-border bg-campus-card px-6 text-sm font-semibold text-campus-ink transition hover:bg-campus-surface"
             onClick={() => handleModeChange("login")}
             type="button"
           >
@@ -157,9 +157,9 @@ export function AuthForm() {
 
   return (
     <>
-      <div className="grid grid-cols-2 rounded-[14px] bg-campus-paper p-1">
+      <div className="grid grid-cols-2 rounded-ctl bg-campus-paper p-1">
         <button
-          className={`min-h-11 rounded-[14px] text-sm font-bold transition ${
+          className={`min-h-11 rounded-ctl text-sm font-bold transition ${
             mode === "login" ? "bg-campus-card text-campus-ink shadow-sm" : "text-campus-muted"
           }`}
           onClick={() => handleModeChange("login")}
@@ -168,7 +168,7 @@ export function AuthForm() {
           Sign in
         </button>
         <button
-          className={`min-h-11 rounded-[14px] text-sm font-bold transition ${
+          className={`min-h-11 rounded-ctl text-sm font-bold transition ${
             mode === "signup" ? "bg-campus-card text-campus-ink shadow-sm" : "text-campus-muted"
           }`}
           onClick={() => handleModeChange("signup")}
@@ -183,7 +183,7 @@ export function AuthForm() {
           <span className="text-sm font-semibold">School email</span>
           <input
             autoComplete="email"
-            className="min-h-12 w-full rounded-[14px] border border-campus-border bg-campus-paper px-4 outline-none transition placeholder:text-campus-muted focus:border-campus-green focus:bg-campus-card focus:ring-4 focus:ring-campus-green/10"
+            className="min-h-12 w-full rounded-ctl border border-campus-border bg-campus-paper px-4 outline-none transition placeholder:text-campus-muted focus:border-campus-brand focus:bg-campus-card focus:shadow-focus"
             name="email"
             placeholder="student@university.edu"
             required
@@ -192,7 +192,7 @@ export function AuthForm() {
         </label>
         <label className="space-y-2">
           <span className="text-sm font-semibold">Password</span>
-          <div className="flex rounded-[14px] border border-campus-border bg-campus-paper transition focus-within:border-campus-green focus-within:bg-campus-card focus-within:ring-4 focus-within:ring-campus-green/10">
+          <div className="flex rounded-ctl border border-campus-border bg-campus-paper transition focus-within:border-campus-brand focus-within:bg-campus-card focus-within:ring-4 focus-within:ring-campus-brand/10">
             <input
               autoComplete={mode === "login" ? "current-password" : "new-password"}
               className="min-h-12 min-w-0 flex-1 bg-transparent px-4 outline-none placeholder:text-campus-muted"
@@ -203,7 +203,7 @@ export function AuthForm() {
               type={showPassword ? "text" : "password"}
             />
             <button
-              className="px-4 text-sm font-bold text-campus-green"
+              className="px-4 text-sm font-bold text-campus-brand"
               onClick={() => setShowPassword((currentValue) => !currentValue)}
               type="button"
             >
@@ -215,7 +215,7 @@ export function AuthForm() {
         {mode === "login" ? (
           <div className="text-right">
             <Link
-              className="inline-flex min-h-11 items-center text-sm font-bold text-campus-green underline-offset-4 hover:underline"
+              className="inline-flex min-h-11 items-center text-sm font-bold text-campus-brand underline-offset-4 hover:underline"
               href="/forgot-password"
             >
               Forgot your password?
@@ -227,7 +227,7 @@ export function AuthForm() {
           <>
             <label className="space-y-2">
               <span className="text-sm font-semibold">Confirm password</span>
-              <div className="flex rounded-[14px] border border-campus-border bg-campus-paper transition focus-within:border-campus-green focus-within:bg-campus-card focus-within:ring-4 focus-within:ring-campus-green/10">
+              <div className="flex rounded-ctl border border-campus-border bg-campus-paper transition focus-within:border-campus-brand focus-within:bg-campus-card focus-within:ring-4 focus-within:ring-campus-brand/10">
                 <input
                   autoComplete="new-password"
                   className="min-h-12 min-w-0 flex-1 bg-transparent px-4 outline-none placeholder:text-campus-muted"
@@ -238,7 +238,7 @@ export function AuthForm() {
                   type={showConfirmPassword ? "text" : "password"}
                 />
                 <button
-                  className="px-4 text-sm font-bold text-campus-green"
+                  className="px-4 text-sm font-bold text-campus-brand"
                   onClick={() => setShowConfirmPassword((currentValue) => !currentValue)}
                   type="button"
                 >
@@ -247,35 +247,35 @@ export function AuthForm() {
               </div>
             </label>
 
-            <label className="flex items-start gap-3 rounded-[14px] border border-campus-border bg-campus-paper p-4 text-sm leading-6 text-campus-muted">
+            <label className="flex items-start gap-3 rounded-ctl border border-campus-border bg-campus-paper p-4 text-sm leading-6 text-campus-muted">
               <input
                 checked={acceptedTerms}
-                className="mt-1 size-4 accent-campus-green"
+                className="mt-1 size-4 accent-campus-brand"
                 onChange={(event) => setAcceptedTerms(event.target.checked)}
                 required
                 type="checkbox"
               />
               <span>
-                I agree to the DormLoot <Link className="font-bold text-campus-green" href="/terms">Terms</Link> and <Link className="font-bold text-campus-green" href="/privacy">Privacy Policy</Link>.
+                I agree to the DormLoot <Link className="font-bold text-campus-brand" href="/terms">Terms</Link> and <Link className="font-bold text-campus-brand" href="/privacy">Privacy Policy</Link>.
               </span>
             </label>
           </>
         ) : null}
 
         {error ? (
-          <div className="rounded-[14px] bg-campus-coral/10 p-4 text-sm font-medium leading-6 text-campus-ink">
+          <div className="rounded-ctl bg-campus-danger/10 p-4 text-sm font-medium leading-6 text-campus-ink">
             {error}
           </div>
         ) : null}
 
         {message ? (
-          <div className="rounded-[14px] bg-campus-successBg p-4 text-sm font-medium leading-6 text-campus-success">
+          <div className="rounded-ctl bg-campus-successBg p-4 text-sm font-medium leading-6 text-campus-success">
             {message}
           </div>
         ) : null}
 
         <button
-          className="min-h-12 w-full rounded-[14px] bg-campus-green px-6 text-sm font-semibold text-white transition hover:bg-campus-hover disabled:cursor-not-allowed disabled:opacity-70"
+          className="min-h-12 w-full rounded-ctl bg-campus-brand px-6 text-sm font-semibold text-white transition hover:bg-campus-brandHover disabled:cursor-not-allowed disabled:opacity-70"
           disabled={isSubmitting}
           type="submit"
         >

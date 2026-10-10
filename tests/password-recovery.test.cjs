@@ -34,12 +34,17 @@ function loadModule(relativePath, overrides = {}) {
   const mocks = {
     "@/lib/supabase/browser-client": { getBrowserSupabaseClient: () => ({ auth }) },
     "next/link": { __esModule: true, default: (props) => React.createElement("a", props) },
+    // Icon package ships ESM only; the component tests care about behaviour, not glyphs.
+    "@phosphor-icons/react": new Proxy({}, { get: () => () => null }),
     "next/navigation": { useRouter: () => router },
     ...overrides
   };
   vm.runInNewContext(compiled, {
     exports: module.exports, module,
-    require: (name) => mocks[name] ?? require(name),
+    require: (name) =>
+      name.startsWith("@phosphor-icons/react")
+        ? mocks["@phosphor-icons/react"]
+        : (mocks[name] ?? require(name)),
     window, FormData, Error, console
   }, { filename });
   return module.exports;

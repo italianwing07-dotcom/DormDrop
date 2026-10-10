@@ -30,7 +30,7 @@ export function ForgotPasswordForm() {
   return (
     <div className="space-y-5">
       {isSent ? (
-        <div className="space-y-2 rounded-[14px] bg-campus-successBg p-4 text-sm leading-6 text-campus-success" role="status">
+        <div className="space-y-2 rounded-ctl bg-campus-successBg p-4 text-sm leading-6 text-campus-success" role="status">
           <p className="font-bold">Check your email</p>
           <p>If an account exists for that email, you’ll receive a password reset link. Check your spam folder too.</p>
           <p>The email may take a few minutes to arrive.</p>
@@ -42,7 +42,7 @@ export function ForgotPasswordForm() {
             <input
               autoComplete="email"
               autoCapitalize="none"
-              className="min-h-12 w-full rounded-[14px] border border-campus-border bg-campus-paper px-4 outline-none transition placeholder:text-campus-muted focus:border-campus-green focus:bg-campus-card focus:ring-4 focus:ring-campus-green/10"
+              className="min-h-12 w-full rounded-ctl border border-campus-border bg-campus-paper px-4 outline-none transition placeholder:text-campus-muted focus:border-campus-brand focus:bg-campus-card focus:shadow-focus"
               disabled={isSubmitting}
               id="reset-email"
               name="email"
@@ -52,12 +52,12 @@ export function ForgotPasswordForm() {
             />
           </div>
           {error ? (
-            <p className="rounded-[14px] bg-campus-coral/10 p-4 text-sm font-medium leading-6 text-campus-ink" role="alert">
+            <p className="rounded-ctl bg-campus-danger/10 p-4 text-sm font-medium leading-6 text-campus-ink" role="alert">
               {error}
             </p>
           ) : null}
           <button
-            className="min-h-12 w-full rounded-[14px] bg-campus-green px-6 text-sm font-semibold text-white transition hover:bg-campus-hover disabled:cursor-not-allowed disabled:opacity-70"
+            className="min-h-12 w-full rounded-ctl bg-campus-brand px-6 text-sm font-semibold text-white transition hover:bg-campus-brandHover disabled:cursor-not-allowed disabled:opacity-70"
             disabled={isSubmitting}
             type="submit"
           >
@@ -67,14 +67,14 @@ export function ForgotPasswordForm() {
       )}
       {isSent ? (
         <button
-          className="flex min-h-11 w-full items-center justify-center text-sm font-bold text-campus-green"
+          className="flex min-h-11 w-full items-center justify-center text-sm font-bold text-campus-brand"
           onClick={() => setIsSent(false)}
           type="button"
         >
           Try another email
         </button>
       ) : null}
-      <Link className="flex min-h-11 items-center justify-center text-sm font-bold text-campus-green underline-offset-4 hover:underline" href="/login">
+      <Link className="flex min-h-11 items-center justify-center text-sm font-bold text-campus-brand underline-offset-4 hover:underline" href="/login">
         Back to sign in
       </Link>
     </div>

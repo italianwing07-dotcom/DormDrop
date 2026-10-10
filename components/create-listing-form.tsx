@@ -6,6 +6,7 @@ import Link from "next/link";
 import type { User } from "@supabase/supabase-js";
 import { getBrowserSupabaseClient } from "@/lib/supabase/browser-client";
 import { campusOptions } from "@/lib/campuses";
+import { Field, Notice, buttonClass, inputClass, selectClass, textareaClass } from "@/components/ui";
 import type { ListingCategory } from "@/lib/supabase/types";
 
 const placeholderImages: Record<ListingCategory, string> = {
@@ -79,6 +80,7 @@ export function CreateListingForm() {
   const preparing = useRef(false);
   const mounted = useRef(true);
   const [isPreparingPhotos, setIsPreparingPhotos] = useState(false);
+  const [category, setCategory] = useState<ListingCategory>("Free");
 
   useEffect(() => {
     photosRef.current = photos;
@@ -179,7 +181,6 @@ export function CreateListingForm() {
       setUser(currentUser);
 
       const formData = new FormData(form);
-      const category = formData.get("category") as ListingCategory;
       const price = normalizeListingPrice(formData.get("price"), category);
       let finalImageUrls: string[] = [];
 
@@ -257,27 +258,27 @@ export function CreateListingForm() {
 
   if (isCheckingUser) {
     return (
-      <div className="space-y-5 rounded-[20px] border border-campus-border bg-campus-card p-4 shadow-soft sm:p-6">
-        <div className="h-44 rounded-[20px] bg-slate-50" />
+      <div className="space-y-5 rounded-card border border-campus-border bg-campus-card p-4 shadow-card sm:p-6">
+        <div className="h-44 rounded-card bg-campus-surface" />
         <div className="grid gap-5 sm:grid-cols-2">
-          <div className="h-12 rounded-[14px] bg-slate-50" />
-          <div className="h-12 rounded-[14px] bg-slate-50" />
+          <div className="h-12 rounded-ctl bg-campus-surface" />
+          <div className="h-12 rounded-ctl bg-campus-surface" />
         </div>
-        <div className="h-32 rounded-[14px] bg-slate-50" />
+        <div className="h-32 rounded-ctl bg-campus-surface" />
       </div>
     );
   }
 
   if (!user) {
     return (
-      <div className="rounded-[20px] border border-campus-border bg-campus-card p-6 shadow-soft">
-        <p className="text-sm font-semibold text-campus-coral">Login required</p>
-        <h2 className="mt-2 text-2xl font-bold tracking-tight">Sign in to create a listing</h2>
+      <div className="rounded-card border border-campus-border bg-campus-card p-6 shadow-card">
+        <p className="text-sm font-semibold text-campus-danger">Login required</p>
+        <h2 className="mt-2 text-2xl font-semibold tracking-tight">Sign in to create a listing</h2>
         <p className="mt-3 text-sm leading-6 text-campus-muted">
           DormLoot listings are connected to your account so they can appear on your profile.
         </p>
         <Link
-          className="mt-5 inline-flex min-h-12 items-center rounded-[14px] bg-campus-green px-6 text-sm font-semibold text-white transition hover:bg-campus-hover"
+          className="mt-5 inline-flex min-h-12 items-center rounded-ctl bg-campus-brand px-6 text-sm font-semibold text-white transition hover:bg-campus-brandHover"
           href="/login"
         >
           Go to login
@@ -288,32 +289,31 @@ export function CreateListingForm() {
 
   return (
     <form
-      className="space-y-5 rounded-[20px] border border-campus-border bg-campus-card p-4 shadow-soft sm:p-6"
+      className="space-y-5 rounded-card border border-campus-border bg-campus-card p-4 shadow-card sm:p-6"
       onSubmit={handleSubmit}
     >
-      <div className="flex min-h-44 flex-col items-center justify-center rounded-[20px] border-2 border-dashed border-campus-border bg-campus-paper p-4 text-center transition hover:border-campus-green hover:bg-slate-50 sm:p-6">
-        <span className="text-sm font-bold text-campus-ink">Image upload placeholder</span>
-        <span className="mt-2 max-w-sm text-sm leading-6 text-campus-muted">
-          Upload up to 5 dorm item photos, or leave this empty to use a clean text placeholder.
+      <div className="flex min-h-44 flex-col items-center justify-center rounded-card border-2 border-dashed border-campus-border bg-campus-paper p-4 text-center transition hover:border-campus-brand hover:bg-campus-surface sm:p-6">
+        <span className="text-sm font-semibold text-campus-ink">Photos</span>
+        <span className="mt-2 max-w-sm text-sm leading-relaxed text-campus-muted">
+          Add up to 5 photos so buyers can see the condition. Listings with photos get more replies.
         </span>
         <button
-          className="mt-4 min-h-12 rounded-[14px] bg-campus-card px-5 py-2 text-sm font-bold text-campus-ink shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+          className={buttonClass("secondary", "md", "mt-4")}
           disabled={photos.length >= 5}
           onClick={() => imageInputRef.current?.click()}
           type="button"
         >
           Choose photos
         </button>
-        <span className="mt-3 text-sm font-semibold text-campus-green">
-          {photos.length}/5 selected
-        </span>
+        <span className="mt-3 text-sm text-campus-muted">{photos.length} of 5 added</span>
         {photos.length > 0 ? (
           <div className="mt-4 grid w-full max-w-xl grid-cols-1 gap-3 min-[380px]:grid-cols-2 sm:grid-cols-3">
             {photos.map((photo, index) => {
               const imageUrl = photo.type === "existing" ? photo.url : photo.previewUrl;
 
               return (
-                <div className="relative overflow-hidden rounded-[14px]" key={photo.id}>
+                <div className="relative overflow-hidden rounded-ctl" key={photo.id}>
+                  {/* eslint-disable-next-line @next/next/no-img-element -- blob: preview URLs cannot go through the image optimizer */}
                   <img
                     alt={"Selected listing preview " + (index + 1)}
                     className="aspect-[4/3] w-full object-cover"
@@ -321,12 +321,12 @@ export function CreateListingForm() {
                   />
                   <div className="absolute inset-x-2 top-2 flex flex-wrap justify-end gap-1">
                     {index === 0 ? (
-                      <span className="rounded-[14px] bg-campus-green px-2 py-1 text-xs font-bold text-white shadow-sm">
+                      <span className="rounded-ctl bg-campus-brand px-2 py-1 text-xs font-bold text-white shadow-sm">
                         Cover
                       </span>
                     ) : null}
                     <button
-                      className="min-h-8 rounded-[14px] bg-campus-card/95 px-2.5 py-1 text-xs font-bold text-campus-ink shadow-sm transition hover:bg-slate-50 disabled:opacity-50"
+                      className="min-h-8 rounded-ctl bg-campus-card/95 px-2.5 py-1 text-xs font-bold text-campus-ink shadow-sm transition hover:bg-campus-surface disabled:opacity-50"
                       disabled={index === 0}
                       onClick={(event) => {
                         event.preventDefault();
@@ -338,7 +338,7 @@ export function CreateListingForm() {
                       Left
                     </button>
                     <button
-                      className="min-h-8 rounded-[14px] bg-campus-card/95 px-2.5 py-1 text-xs font-bold text-campus-ink shadow-sm transition hover:bg-slate-50 disabled:opacity-50"
+                      className="min-h-8 rounded-ctl bg-campus-card/95 px-2.5 py-1 text-xs font-bold text-campus-ink shadow-sm transition hover:bg-campus-surface disabled:opacity-50"
                       disabled={index === photos.length - 1}
                       onClick={(event) => {
                         event.preventDefault();
@@ -350,7 +350,7 @@ export function CreateListingForm() {
                       Right
                     </button>
                     <button
-                      className="min-h-8 rounded-[14px] bg-campus-card/95 px-2.5 py-1 text-xs font-bold text-campus-coral shadow-sm transition hover:bg-campus-coral hover:text-white"
+                      className="min-h-8 rounded-ctl bg-campus-card/95 px-2.5 py-1 text-xs font-bold text-campus-danger shadow-sm transition hover:bg-campus-danger hover:text-white"
                       onClick={(event) => {
                         event.preventDefault();
                         event.stopPropagation();
@@ -366,10 +366,10 @@ export function CreateListingForm() {
             })}
           </div>
         ) : null}
-        {isPreparingPhotos ? <p role="status" className="mt-3 text-sm font-semibold text-campus-green">Preparing photos…</p> : null}
+        {isPreparingPhotos ? <p role="status" className="mt-3 text-sm font-semibold text-campus-brand">Preparing photos…</p> : null}
         <p className="mt-2 text-xs text-campus-muted">Up to 5 photos, 20 MB each. iPhone photos are converted and large photos are compressed automatically.</p>
         {isUploadingImage ? (
-          <span className="mt-3 text-sm font-semibold text-campus-green">
+          <span className="mt-3 text-sm font-semibold text-campus-brand">
             Uploading image...
           </span>
         ) : null}
@@ -386,21 +386,22 @@ export function CreateListingForm() {
       </div>
 
       <div className="grid gap-5 sm:grid-cols-2">
-        <label className="space-y-2">
-          <span className="text-sm font-semibold">Listing title</span>
+        <Field htmlFor="title" hint="What the item is, in a few words." label="Listing title" required>
           <input
-            className="min-h-12 w-full rounded-[14px] border border-campus-border px-4 outline-none transition focus:border-campus-green focus:ring-4 focus:ring-campus-green/10"
+            className={inputClass}
+            id="title"
+            maxLength={120}
             name="title"
-            placeholder="Mini fridge"
+            placeholder="Mini fridge, 3.2 cu ft"
             required
             type="text"
           />
-        </label>
-        <label className="space-y-2">
-          <span className="text-sm font-semibold">Campus</span>
+        </Field>
+        <Field htmlFor="campus" label="Campus" required>
           <select
-            className="min-h-12 w-full rounded-[14px] border border-campus-border bg-campus-card px-4 outline-none transition focus:border-campus-green focus:ring-4 focus:ring-campus-green/10"
+            className={selectClass}
             defaultValue=""
+            id="campus"
             name="campus"
             required
           >
@@ -413,60 +414,69 @@ export function CreateListingForm() {
               </option>
             ))}
           </select>
-        </label>
+        </Field>
       </div>
 
       <div className="grid gap-5 sm:grid-cols-2">
-        <label className="space-y-2">
-          <span className="text-sm font-semibold">Category</span>
+        <Field htmlFor="category" label="Category" required>
           <select
-            className="min-h-12 w-full rounded-[14px] border border-campus-border bg-campus-card px-4 outline-none transition focus:border-campus-green focus:ring-4 focus:ring-campus-green/10"
+            className={selectClass}
+            id="category"
             name="category"
+            onChange={(event) => setCategory(event.target.value as ListingCategory)}
             required
+            value={category}
           >
             <option>Free</option>
             <option>For Sale</option>
             <option>Wanted</option>
           </select>
-        </label>
-        <label className="space-y-2">
-          <span className="text-sm font-semibold">Price ($)</span>
-          <input
-            className="min-h-12 w-full rounded-[14px] border border-campus-border px-4 outline-none transition focus:border-campus-green focus:ring-4 focus:ring-campus-green/10"
-            name="price"
-            inputMode="decimal"
-            placeholder="0.00"
-            defaultValue="0"
-            required
-            type="text"
-          />
-        </label>
+        </Field>
+        {category === "For Sale" ? (
+          <Field htmlFor="price" hint="Dollars. Enter 10 or 10.50." label="Price" required>
+            <input
+              className={inputClass}
+              id="price"
+              inputMode="decimal"
+              name="price"
+              placeholder="10.00"
+              required
+              type="text"
+            />
+          </Field>
+        ) : (
+          <div className="flex items-end">
+            <p className="pb-3 text-sm text-campus-muted">
+              {category === "Free"
+                ? "Free items do not need a price."
+                : "Wanted posts are requests, so they do not have a price."}
+            </p>
+          </div>
+        )}
       </div>
 
-      <label className="space-y-2">
-        <span className="text-sm font-semibold">Description</span>
+      <Field
+        htmlFor="description"
+        hint="Condition, pickup notes, and anything a student should know. Avoid sharing your room number here."
+        label="Description"
+        required
+      >
         <textarea
-          className="min-h-36 w-full rounded-[14px] border border-campus-border px-4 py-3 text-base outline-none transition focus:border-campus-green focus:ring-4 focus:ring-campus-green/10 sm:min-h-32 sm:text-sm"
+          className={textareaClass}
+          id="description"
+          maxLength={2000}
           name="description"
-          placeholder="Condition, pickup notes, and anything a student should know."
+          placeholder="Used it for two years, cools fast, pickup any evening this week."
           required
         />
-      </label>
+      </Field>
 
-      {error ? (
-        <div className="rounded-[14px] bg-campus-coral/10 p-4 text-sm font-medium leading-6 text-campus-ink">
-          {error}
-        </div>
-      ) : null}
+      {error ? <Notice title="Could not post this listing">{error}</Notice> : null}
 
-      {uploadError ? (
-        <div className="rounded-[14px] bg-campus-coral/10 p-4 text-sm font-medium leading-6 text-campus-ink">
-          Image upload error: {uploadError}
-        </div>
-      ) : null}
+      {uploadError ? <Notice title="Photo upload problem">{uploadError}</Notice> : null}
 
       <button
-        className="min-h-12 w-full rounded-[14px] bg-campus-green px-6 text-sm font-semibold text-white transition hover:bg-campus-hover disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto"
+        className={buttonClass("primary", "lg", "w-full sm:w-auto")}
         disabled={isSubmitting || isPreparingPhotos}
         type="submit"
       >

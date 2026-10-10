@@ -1,6 +1,13 @@
 # DormLoot
 
-DormLoot is a mobile-first student marketplace for giving away, selling, saving, and requesting dorm items by campus. Students can create listings, browse available items, mark their own listings as sold, save listings, and contact sellers by email.
+DormLoot is a mobile-first student marketplace for giving away, selling, saving
+and requesting dorm items by campus. It launches at Fordham (Rose Hill and
+Lincoln Center) and is built to open to other schools later. Students post
+items with photos, browse and filter by campus, message each other in the app,
+save listings, and mark their own items sold.
+
+DormLoot is run by students. It is not operated by or affiliated with Fordham
+University.
 
 ## Tech Stack
 
@@ -40,12 +47,34 @@ npm run build
 
 ## Required Environment Variables
 
-```env
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
+| Name | Scope | Required | Purpose |
+| --- | --- | --- | --- |
+| `NEXT_PUBLIC_SUPABASE_URL` | public, browser | yes | Supabase project endpoint |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | public, browser | yes | Anon key; access is controlled by Row Level Security |
+
+Both are public browser keys by design. There is no service-role key anywhere in
+this project, and none should be added without a specific server-side reason.
+Set both in Vercel for Production and Preview. Do not commit `.env.local`; it is
+ignored by `.gitignore`.
+
+## Checks
+
+```bash
+npm run lint     # eslint, expected to be clean
+npm run build    # typecheck plus production build
+npm test         # component tests and isolated-Postgres policy tests
 ```
 
-These are public browser keys from Supabase. Do not commit `.env.local`; it is ignored by `.gitignore`.
+`npm test` runs component tests for messaging retries, unread badges, photo
+preparation and password recovery, plus two Postgres suites that execute the
+real `supabase/schema.sql` and migration inside pglite:
+`database-launch.test.cjs` (lifecycle and moderation) and
+`permission-denials.test.cjs` (a third unrelated account attempting to read or
+modify other students' listings, conversations, reports and photo objects).
+
+To open the UI without a Supabase project, see
+[tools/preview-fixtures](tools/preview-fixtures/README.md). Design conventions
+are documented in [docs/design-system.md](docs/design-system.md).
 
 ## Supabase Setup Notes
 

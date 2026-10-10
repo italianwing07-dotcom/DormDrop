@@ -1,20 +1,16 @@
 "use client";
 
-export default function BrowseError({
-  error,
-  reset
-}: {
-  error: Error;
-  reset: () => void;
-}) {
+export default function BrowseError({ reset }: { reset: () => void }) {
   return (
     <main className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
-      <section className="rounded-[20px] border border-campus-border bg-campus-card p-6 shadow-soft">
-        <p className="text-sm font-semibold text-campus-coral">Could not load listings</p>
-        <h1 className="mt-2 text-2xl font-bold tracking-tight">Supabase returned an error</h1>
-        <p className="mt-3 text-sm leading-6 text-campus-muted">{error.message}</p>
+      <section className="rounded-card border border-campus-border bg-campus-card p-6 shadow-card">
+        <p className="text-sm font-semibold text-campus-danger">Could not load listings</p>
+        <h1 className="mt-2 text-2xl font-semibold tracking-tight">We could not load listings</h1>
+        <p className="mt-3 text-sm leading-relaxed text-campus-muted">
+          This is usually a connection problem. Try again in a moment.
+        </p>
         <button
-          className="mt-5 min-h-12 rounded-[14px] bg-campus-green px-6 text-sm font-semibold text-white transition hover:bg-campus-hover"
+          className="mt-5 min-h-12 rounded-ctl bg-campus-brand px-6 text-sm font-semibold text-white transition hover:bg-campus-brandHover"
           onClick={reset}
           type="button"
         >

@@ -68,11 +68,11 @@ export function ReportListingButton({ listingId }: { listingId: string }) {
         Report this listing
       </button>
       {isOpen ? (
-        <div className="mt-3 space-y-3 rounded-[14px] bg-campus-paper p-4">
+        <div className="mt-3 space-y-3 rounded-ctl bg-campus-paper p-4">
           <label className="block text-sm font-semibold">
             Reason
             <select
-              className="mt-2 min-h-11 w-full rounded-[14px] border border-campus-border bg-white px-3"
+              className="mt-2 min-h-11 w-full rounded-ctl border border-campus-border bg-white px-3"
               onChange={(event) => setReason(event.target.value as (typeof reasons)[number])}
               value={reason}
             >
@@ -82,14 +82,14 @@ export function ReportListingButton({ listingId }: { listingId: string }) {
           <label className="block text-sm font-semibold">
             Additional details (optional)
             <textarea
-              className="mt-2 min-h-24 w-full rounded-[14px] border border-campus-border bg-white p-3"
+              className="mt-2 min-h-24 w-full rounded-ctl border border-campus-border bg-white p-3"
               maxLength={1000}
               onChange={(event) => setDetails(event.target.value)}
               value={details}
             />
           </label>
           <button
-            className="min-h-11 rounded-[14px] bg-campus-ink px-5 text-sm font-bold text-white disabled:opacity-60"
+            className="min-h-11 rounded-ctl bg-campus-ink px-5 text-sm font-bold text-white disabled:opacity-60"
             disabled={isSubmitting}
             onClick={submitReport}
             type="button"

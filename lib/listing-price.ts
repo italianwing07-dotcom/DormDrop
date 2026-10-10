@@ -3,7 +3,9 @@ import type { ListingCategory } from "@/lib/supabase/types";
 // Supabase projects may store prices as text or numeric. Send a canonical
 // decimal string accepted by both, while allowing familiar dollar inputs.
 export function normalizeListingPrice(value: FormDataEntryValue | null, category: ListingCategory) {
-  if (category === "Free") return "0.00";
+  // Free items and Wanted requests carry no asking price, so the form does not
+  // render a price field for them.
+  if (category === "Free" || category === "Wanted") return "0.00";
   const input = String(value ?? "").trim().replace(/^\$\s*/, "");
   if (!/^(?:\d+|\d{1,3}(?:,\d{3})+)(?:\.\d{1,2})?$/.test(input)) {
     throw new Error("Enter a price of zero or more, such as 10 or $10.50 (up to two decimal places).");

@@ -1,7 +1,7 @@
 export default function SafetyPage() {
   return (
     <main className="mx-auto w-full max-w-3xl px-4 py-10 sm:px-6">
-      <h1 className="text-3xl font-black tracking-tight">Marketplace safety</h1>
+      <h1 className="text-3xl font-semibold tracking-tight">Marketplace safety</h1>
       <div className="mt-6 space-y-6 text-sm leading-7 text-campus-muted">
         <section><h2 className="text-lg font-bold text-campus-ink">Meet safely</h2><p>Meet in a busy, public campus location during daylight hours. Tell someone where you are going, and do not enter a stranger’s dorm room or vehicle.</p></section>
         <section><h2 className="text-lg font-bold text-campus-ink">Inspect before paying</h2><p>Check the item in person and confirm that it matches the listing before sending money. DormLoot does not hold payments, guarantee items, or provide buyer protection.</p></section>
