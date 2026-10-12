@@ -35,7 +35,14 @@ async function createIsolatedDb() {
     .readFileSync(path.join(root, "supabase/schema.sql"), "utf8")
     .replace("create extension if not exists pgcrypto;", "-- gen_random_uuid is built into Postgres");
   await db.exec(schema);
-  await db.exec(fs.readFileSync(path.join(root, "supabase/migrations/20260919152913_launch_readiness.sql"), "utf8"));
+  // Every migration, in order, so tests run against the deployed shape.
+  const migrations = fs
+    .readdirSync(path.join(root, "supabase/migrations"))
+    .filter((name) => name.endsWith(".sql"))
+    .sort();
+  for (const migration of migrations) {
+    await db.exec(fs.readFileSync(path.join(root, "supabase/migrations", migration), "utf8"));
+  }
 
   return db;
 }

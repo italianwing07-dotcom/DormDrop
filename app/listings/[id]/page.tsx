@@ -106,7 +106,7 @@ export default async function ListingDetailsPage({ params }: ListingDetailsPageP
                 <p className="text-xs text-campus-muted">Signed up with a verified school email</p>
               </div>
             </div>
-            <ContactSellerActions email={listing.seller.email} title={listing.title} />
+            <ContactSellerActions listingId={listing.id} title={listing.title} />
             <ReportListingButton listingId={listing.id} />
           </Card>
         </div>

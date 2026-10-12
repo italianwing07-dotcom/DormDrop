@@ -102,7 +102,7 @@ export function mapListingRow(row: ListingRow): Listing {
       name: "",
       dorm: getCampusDisplayName(row.campus),
       year: "",
-      email: row.seller_email
+      email: row.seller_email ?? null
     }
   };
 }

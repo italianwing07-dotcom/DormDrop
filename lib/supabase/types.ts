@@ -10,7 +10,8 @@ export type ListingRow = {
   campus: string;
   image_url: string;
   image_urls: string[] | null;
-  seller_email: string | null;
+  // Absent from public reads: anon is not granted this column.
+  seller_email?: string | null;
   sold: boolean;
   created_at: string;
 };
