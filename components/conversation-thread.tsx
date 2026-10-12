@@ -1,6 +1,8 @@
 "use client";
 
 import Image from "next/image";
+import { PaperPlaneTilt } from "@phosphor-icons/react";
+import { Button, textareaClass } from "@/components/ui";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -149,9 +151,9 @@ export function ConversationThread() {
     return (
       <main className="mx-auto w-full max-w-4xl px-4 py-6 sm:px-6 lg:px-8">
         <div className="space-y-4">
-          <div className="h-5 w-28 rounded-[14px] bg-slate-50" />
-          <div className="h-28 rounded-[20px] bg-campus-card shadow-soft" />
-          <div className="h-80 rounded-[20px] bg-campus-card shadow-soft" />
+          <div className="h-5 w-28 rounded-ctl bg-campus-surface" />
+          <div className="h-28 rounded-card bg-campus-card shadow-card" />
+          <div className="h-80 rounded-card bg-campus-card shadow-card" />
         </div>
       </main>
     );
@@ -160,11 +162,11 @@ export function ConversationThread() {
   if (!user) {
     return (
       <main className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 lg:px-8">
-        <section className="rounded-[20px] border border-campus-border bg-campus-card p-6 shadow-soft">
-          <p className="text-sm font-semibold text-campus-coral">Login required</p>
-          <h1 className="mt-2 text-2xl font-bold tracking-tight">Sign in to view messages</h1>
+        <section className="rounded-card border border-campus-border bg-campus-card p-6 shadow-card">
+          <p className="text-sm font-semibold text-campus-danger">Login required</p>
+          <h1 className="mt-2 text-2xl font-semibold tracking-tight">Sign in to view messages</h1>
           <Link
-            className="mt-5 inline-flex min-h-12 items-center rounded-[14px] bg-campus-green px-6 text-sm font-semibold text-white transition hover:bg-campus-hover"
+            className="mt-5 inline-flex min-h-12 items-center rounded-ctl bg-campus-brand px-6 text-sm font-semibold text-white transition hover:bg-campus-brandHover"
             href="/login"
           >
             Go to login
@@ -177,14 +179,14 @@ export function ConversationThread() {
   if (!conversation) {
     return (
       <main className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 lg:px-8">
-        <section className="rounded-[20px] border border-campus-border bg-campus-card p-6 shadow-soft">
-          <p className="text-sm font-semibold text-campus-coral">Conversation unavailable</p>
-          <h1 className="mt-2 text-2xl font-bold tracking-tight">Could not open this thread</h1>
+        <section className="rounded-card border border-campus-border bg-campus-card p-6 shadow-card">
+          <p className="text-sm font-semibold text-campus-danger">Conversation unavailable</p>
+          <h1 className="mt-2 text-2xl font-semibold tracking-tight">Could not open this thread</h1>
           <p className="mt-3 text-sm leading-6 text-campus-muted">
             {error ?? "You may not have access to this conversation."}
           </p>
           <Link
-            className="mt-5 inline-flex min-h-12 items-center rounded-[14px] bg-campus-green px-6 text-sm font-semibold text-white transition hover:bg-campus-hover"
+            className="mt-5 inline-flex min-h-12 items-center rounded-ctl bg-campus-brand px-6 text-sm font-semibold text-white transition hover:bg-campus-brandHover"
             href="/inbox"
           >
             Back to inbox
@@ -197,12 +199,15 @@ export function ConversationThread() {
   return (
     <main className="mx-auto w-full max-w-4xl px-4 py-6 sm:px-6 lg:px-8">
       <section className="space-y-5">
-        <Link className="text-sm font-semibold text-campus-green" href="/inbox">
+        <Link className="text-sm font-semibold text-campus-brand" href="/inbox">
           Back to inbox
         </Link>
 
-        <div className="flex gap-3 rounded-[20px] border border-campus-border bg-campus-card p-3 shadow-soft sm:gap-4 sm:p-4">
-          <div className="relative size-16 shrink-0 overflow-hidden rounded-[14px] bg-slate-50 sm:size-24">
+        <Link
+          className="flex items-center gap-3 rounded-card border border-campus-border bg-campus-card p-3 shadow-card transition hover:border-campus-borderStrong"
+          href={listing ? `/listings/${listing.id}` : "/browse"}
+        >
+          <div className="relative size-14 shrink-0 overflow-hidden rounded-ctl bg-campus-surface">
             {listing && !isPlaceholderImageUrl(listing.image_url) ? (
               <Image
                 alt={listing.title}
@@ -219,19 +224,18 @@ export function ConversationThread() {
               />
             ) : null}
           </div>
-          <div className="min-w-0">
-            <p className="text-sm font-semibold text-campus-green">Message thread</p>
-            <h1 className="truncate text-xl font-bold tracking-tight sm:text-2xl">
-              {listing?.title ?? "DormLoot listing"}
+          <div className="min-w-0 flex-1">
+            <h1 className="truncate text-base font-semibold tracking-tight text-campus-ink">
+              {listing?.title ?? "This listing is no longer available"}
             </h1>
-            <p className="mt-1 text-sm text-campus-muted">
-              {getCampusDisplayName(listing?.campus)}
+            <p className="mt-0.5 text-xs text-campus-muted">
+              {getCampusDisplayName(listing?.campus)} · View listing
             </p>
           </div>
-        </div>
+        </Link>
 
-        <div className="space-y-4 rounded-[20px] border border-campus-border bg-campus-card p-3 shadow-soft sm:p-5">
-          {error ? <p role="status" className="text-sm text-campus-coral">Messages could not refresh. Reconnecting automatically…</p> : null}
+        <div className="space-y-4 rounded-card border border-campus-border bg-campus-card p-3 shadow-card sm:p-5">
+          {error ? <p role="status" className="text-sm text-campus-danger">Messages could not refresh. Reconnecting automatically…</p> : null}
           <div ref={scroller} role="log" aria-label="Conversation messages" aria-live="polite"
             onScroll={() => { const el = scroller.current; if (el) followLatest.current = el.scrollHeight - el.scrollTop - el.clientHeight < 100; }}
             className="max-h-[52svh] space-y-3 overflow-y-auto pr-1 sm:max-h-[55vh]">
@@ -246,56 +250,68 @@ export function ConversationThread() {
 
                 return (
                   <div
-                    className={`rounded-[14px] p-3 sm:p-4 ${
-                      isMine ? "bg-slate-50" : "bg-campus-paper"
-                    }`}
+                    className={`flex flex-col ${isMine ? "items-end" : "items-start"}`}
                     key={threadMessage.id}
                   >
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <p className="text-sm font-bold text-campus-ink">{senderLabel}</p>
-                      <p className="text-xs font-semibold text-campus-muted">
-                        {formatMessageTime(threadMessage.created_at)}
+                    <div
+                      className={`max-w-[85%] rounded-card px-3.5 py-2.5 sm:max-w-[75%] ${
+                        isMine
+                          ? "bg-campus-brand text-white"
+                          : "border border-campus-border bg-campus-surface text-campus-ink"
+                      }`}
+                    >
+                      <p className="whitespace-pre-wrap break-words text-[15px] leading-relaxed">
+                        {threadMessage.content}
                       </p>
                     </div>
-                    <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-6 text-campus-muted">
-                      {threadMessage.content}
+                    <p className="mt-1 px-1 text-[11px] text-campus-subtle">
+                      <span className="sr-only">{senderLabel}, </span>
+                      {formatMessageTime(threadMessage.created_at)}
                     </p>
                   </div>
                 );
               })
             ) : (
-              <div className="rounded-[14px] bg-campus-paper p-5 text-center">
-                <p className="text-sm font-semibold text-campus-muted">
-                  No messages yet.
+              <div className="rounded-ctl bg-campus-surface p-6 text-center">
+                <p className="text-sm text-campus-muted">
+                  No messages yet. Say hello and ask if the item is still available.
                 </p>
               </div>
             )}
           </div>
 
-          <label className="block space-y-2 border-t border-campus-border pt-4">
-            <span className="text-sm font-semibold">Reply</span>
+          <div className="space-y-2 border-t border-campus-border pt-4">
+            <label className="sr-only" htmlFor="reply">
+              Write a reply
+            </label>
             <textarea
-              className="min-h-32 w-full rounded-[14px] border border-campus-border px-4 py-3 text-base outline-none transition focus:border-campus-green focus:ring-4 focus:ring-campus-green/10 sm:min-h-28 sm:text-sm"
+              className={textareaClass}
               disabled={isSending}
+              id="reply"
               maxLength={MAX_MESSAGE_LENGTH}
               onChange={(event) => setMessage(event.target.value)}
-              placeholder="Write a message..."
+              placeholder="Write a message"
               value={message}
             />
-          </label>
+            <p className="text-right text-xs text-campus-subtle">
+              {message.length}/{MAX_MESSAGE_LENGTH}
+            </p>
+          </div>
           {sendError ? (
-            <div role="alert" className="rounded-[14px] bg-campus-coral/10 p-4 text-sm font-medium leading-6 text-campus-ink">
+            <div role="alert" className="rounded-ctl bg-campus-danger/10 p-4 text-sm font-medium leading-6 text-campus-ink">
               {sendError}
             </div>
           ) : null}
-          <button
-            className="min-h-12 w-full rounded-[14px] bg-campus-green px-6 text-sm font-semibold text-white transition hover:bg-campus-hover disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto"
+          <Button
+            className="w-full sm:w-auto"
             disabled={isSending || !message.trim()}
             onClick={handleSend}
+            size="lg"
             type="button"
           >
-            {isSending ? "Sending..." : "Send reply"}
-          </button>
+            <PaperPlaneTilt size={17} weight="fill" />
+            {isSending ? "Sending" : "Send reply"}
+          </Button>
         </div>
       </section>
     </main>

@@ -88,13 +88,13 @@ export function ResetPasswordForm() {
   if (state === "invalid") {
     return (
       <div className="space-y-4">
-        <p className="rounded-[14px] bg-campus-coral/10 p-4 text-sm leading-6 text-campus-ink" role="alert">
+        <p className="rounded-ctl bg-campus-danger/10 p-4 text-sm leading-6 text-campus-ink" role="alert">
           This reset link is invalid or has expired. Request a new link and open the most recent email.
         </p>
-        <Link className="flex min-h-12 items-center justify-center rounded-[14px] bg-campus-green px-6 text-sm font-semibold text-white hover:bg-campus-hover" href="/forgot-password">
+        <Link className="flex min-h-12 items-center justify-center rounded-ctl bg-campus-brand px-6 text-sm font-semibold text-white hover:bg-campus-brandHover" href="/forgot-password">
           Request a new reset link
         </Link>
-        <Link className="flex min-h-11 items-center justify-center text-sm font-bold text-campus-green" href="/login">
+        <Link className="flex min-h-11 items-center justify-center text-sm font-bold text-campus-brand" href="/login">
           Back to sign in
         </Link>
       </div>
@@ -104,11 +104,11 @@ export function ResetPasswordForm() {
   if (state === "complete") {
     return (
       <div className="space-y-4">
-        <div className="space-y-2 rounded-[14px] bg-campus-successBg p-4 text-sm leading-6 text-campus-success" role="status">
+        <div className="space-y-2 rounded-ctl bg-campus-successBg p-4 text-sm leading-6 text-campus-success" role="status">
           <p className="font-bold">Password updated</p>
           <p>You’re signed in. Use your new password the next time you sign in to DormLoot.</p>
         </div>
-        <Link className="flex min-h-12 items-center justify-center rounded-[14px] bg-campus-green px-6 text-sm font-semibold text-white hover:bg-campus-hover" href="/profile">
+        <Link className="flex min-h-12 items-center justify-center rounded-ctl bg-campus-brand px-6 text-sm font-semibold text-white hover:bg-campus-brandHover" href="/profile">
           Go to your profile
         </Link>
       </div>
@@ -121,7 +121,7 @@ export function ResetPasswordForm() {
         <label className="text-sm font-semibold" htmlFor="new-password">New password</label>
         <input
           autoComplete="new-password"
-          className="min-h-12 w-full rounded-[14px] border border-campus-border bg-campus-paper px-4 outline-none transition focus:border-campus-green focus:bg-campus-card focus:ring-4 focus:ring-campus-green/10"
+          className="min-h-12 w-full rounded-ctl border border-campus-border bg-campus-paper px-4 outline-none transition focus:border-campus-brand focus:bg-campus-card focus:shadow-focus"
           disabled={isSubmitting}
           id="new-password"
           minLength={8}
@@ -134,7 +134,7 @@ export function ResetPasswordForm() {
         <label className="text-sm font-semibold" htmlFor="confirm-new-password">Confirm new password</label>
         <input
           autoComplete="new-password"
-          className="min-h-12 w-full rounded-[14px] border border-campus-border bg-campus-paper px-4 outline-none transition focus:border-campus-green focus:bg-campus-card focus:ring-4 focus:ring-campus-green/10"
+          className="min-h-12 w-full rounded-ctl border border-campus-border bg-campus-paper px-4 outline-none transition focus:border-campus-brand focus:bg-campus-card focus:shadow-focus"
           disabled={isSubmitting}
           id="confirm-new-password"
           minLength={8}
@@ -144,17 +144,17 @@ export function ResetPasswordForm() {
         />
       </div>
       <label className="flex min-h-11 cursor-pointer items-center gap-3 text-sm text-campus-muted">
-        <input className="size-4 accent-campus-green" checked={showPassword} onChange={(event) => setShowPassword(event.target.checked)} type="checkbox" />
+        <input className="size-4 accent-campus-brand" checked={showPassword} onChange={(event) => setShowPassword(event.target.checked)} type="checkbox" />
         Show passwords
       </label>
       {error ? (
-        <div className="space-y-2 rounded-[14px] bg-campus-coral/10 p-4 text-sm leading-6 text-campus-ink" role="alert">
+        <div className="space-y-2 rounded-ctl bg-campus-danger/10 p-4 text-sm leading-6 text-campus-ink" role="alert">
           <p>{error}</p>
-          <Link className="font-bold text-campus-green underline" href="/forgot-password">Request a new reset link</Link>
+          <Link className="font-bold text-campus-brand underline" href="/forgot-password">Request a new reset link</Link>
         </div>
       ) : null}
       <button
-        className="min-h-12 w-full rounded-[14px] bg-campus-green px-6 text-sm font-semibold text-white transition hover:bg-campus-hover disabled:cursor-not-allowed disabled:opacity-70"
+        className="min-h-12 w-full rounded-ctl bg-campus-brand px-6 text-sm font-semibold text-white transition hover:bg-campus-brandHover disabled:cursor-not-allowed disabled:opacity-70"
         disabled={isSubmitting}
         type="submit"
       >

@@ -144,7 +144,7 @@ export function MessageSellerButton({
 
   if (!sellerId) {
     return (
-      <p className="mt-4 flex min-h-12 w-full items-center justify-center rounded-[14px] bg-campus-paper px-6 text-sm font-semibold text-campus-muted">
+      <p className="mt-4 flex min-h-12 w-full items-center justify-center rounded-ctl bg-campus-paper px-6 text-sm font-semibold text-campus-muted">
         Messaging unavailable
       </p>
     );
@@ -152,7 +152,7 @@ export function MessageSellerButton({
 
   if (currentUserId === sellerId) {
     return (
-      <p className="mt-4 flex min-h-12 w-full items-center justify-center rounded-[14px] bg-campus-paper px-6 text-sm font-semibold text-campus-muted">
+      <p className="mt-4 flex min-h-12 w-full items-center justify-center rounded-ctl bg-campus-paper px-6 text-sm font-semibold text-campus-muted">
         This is your listing
       </p>
     );
@@ -162,7 +162,7 @@ export function MessageSellerButton({
     <div className="mt-4 space-y-3">
       {!isOpen ? (
         <button
-          className="min-h-12 w-full rounded-[14px] bg-campus-green px-6 text-sm font-semibold text-white transition hover:bg-campus-hover"
+          className="min-h-12 w-full rounded-ctl bg-campus-brand px-6 text-sm font-semibold text-white transition hover:bg-campus-brandHover"
           onClick={handleOpen}
           type="button"
         >
@@ -175,7 +175,7 @@ export function MessageSellerButton({
               Message seller about {listingTitle}
             </span>
             <textarea
-              className="min-h-28 w-full rounded-[14px] border border-campus-border px-4 py-3 text-sm outline-none transition focus:border-campus-green focus:ring-4 focus:ring-campus-green/10"
+              className="min-h-28 w-full rounded-ctl border border-campus-border px-4 py-3 text-sm outline-none transition focus:border-campus-brand focus:shadow-focus"
               disabled={isSending}
               maxLength={MAX_MESSAGE_LENGTH}
               onChange={(event) => setMessage(event.target.value)}
@@ -184,7 +184,7 @@ export function MessageSellerButton({
             />
           </label>
           <button
-            className="min-h-12 w-full rounded-[14px] bg-campus-green px-6 text-sm font-semibold text-white transition hover:bg-campus-hover disabled:cursor-not-allowed disabled:opacity-70"
+            className="min-h-12 w-full rounded-ctl bg-campus-brand px-6 text-sm font-semibold text-white transition hover:bg-campus-brandHover disabled:cursor-not-allowed disabled:opacity-70"
             disabled={isSending || !message.trim()}
             onClick={handleSend}
             type="button"
@@ -194,7 +194,7 @@ export function MessageSellerButton({
         </div>
       )}
       {error ? (
-        <p role="alert" className="text-sm font-medium leading-6 text-campus-coral">{error}</p>
+        <p role="alert" className="text-sm font-medium leading-6 text-campus-danger">{error}</p>
       ) : null}
     </div>
   );

@@ -2,7 +2,10 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { ListingCard } from "@/components/listing-card";
+import { ListingImagePlaceholder, isPlaceholderImageUrl } from "@/components/listing-image-placeholder";
+import { Badge, Button, Card, buttonClass } from "@/components/ui";
 import { ListingCardSkeleton } from "@/components/listing-card-skeleton";
 import { getCampusFilterOptions, getCampusFilterValue } from "@/lib/campuses";
 import { mapListingRow } from "@/lib/supabase/listing-mapper";
@@ -232,19 +235,19 @@ export function ProfileContent() {
   if (isLoading) {
     return (
       <main className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
-        <section className="grid gap-6 lg:grid-cols-[0.8fr_1.2fr]">
-          <div className="rounded-[20px] border border-campus-border bg-campus-card p-5 shadow-soft sm:p-6">
+        <section className="grid items-start gap-6 lg:grid-cols-[0.8fr_1.2fr]">
+          <div className="rounded-card border border-campus-border bg-campus-card p-5 shadow-card sm:p-6">
             <div className="flex items-center gap-3 sm:gap-4">
-              <div className="size-16 rounded-[14px] bg-slate-50" />
+              <div className="size-16 rounded-ctl bg-campus-surface" />
               <div className="flex-1 space-y-3">
-                <div className="h-4 w-32 rounded-[14px] bg-slate-50" />
-                <div className="h-7 w-48 rounded-[14px] bg-slate-50" />
-                <div className="h-4 w-56 rounded-[14px] bg-slate-50" />
+                <div className="h-4 w-32 rounded-ctl bg-campus-surface" />
+                <div className="h-7 w-48 rounded-ctl bg-campus-surface" />
+                <div className="h-4 w-56 rounded-ctl bg-campus-surface" />
               </div>
             </div>
             <div className="mt-6 grid grid-cols-3 gap-3">
               {Array.from({ length: 3 }).map((_, index) => (
-                <div className="h-20 rounded-[14px] bg-campus-paper" key={index} />
+                <div className="h-20 rounded-ctl bg-campus-paper" key={index} />
               ))}
             </div>
           </div>
@@ -260,14 +263,14 @@ export function ProfileContent() {
   if (error || !user) {
     return (
       <main className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 lg:px-8">
-        <section className="rounded-[20px] border border-campus-border bg-campus-card p-6 shadow-soft">
-          <p className="text-sm font-semibold text-campus-coral">Not signed in</p>
-          <h1 className="mt-2 text-2xl font-bold tracking-tight">Log in to view your profile</h1>
+        <section className="rounded-card border border-campus-border bg-campus-card p-6 shadow-card">
+          <p className="text-sm font-semibold text-campus-danger">Not signed in</p>
+          <h1 className="mt-2 text-2xl font-semibold tracking-tight">Log in to view your profile</h1>
           <p className="mt-3 text-sm leading-6 text-campus-muted">
             {error ?? "Please sign in to view your profile."}
           </p>
           <Link
-            className="mt-5 inline-flex min-h-12 items-center rounded-[14px] bg-campus-green px-6 text-sm font-semibold text-white transition hover:bg-campus-hover"
+            className="mt-5 inline-flex min-h-12 items-center rounded-ctl bg-campus-brand px-6 text-sm font-semibold text-white transition hover:bg-campus-brandHover"
             href="/login"
           >
             Go to login
@@ -296,26 +299,26 @@ export function ProfileContent() {
 
   return (
     <main className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
-      <section className="grid gap-6 lg:grid-cols-[0.8fr_1.2fr]">
-        <div className="rounded-[20px] border border-campus-border bg-campus-card p-5 shadow-soft sm:p-6">
+      <section className="grid items-start gap-6 lg:grid-cols-[0.8fr_1.2fr]">
+        <div className="rounded-card border border-campus-border bg-campus-card p-5 shadow-card sm:p-6">
           <div className="flex items-center gap-3 sm:gap-4">
-            <div className="flex size-14 shrink-0 items-center justify-center rounded-[14px] bg-slate-50 text-xl font-bold text-campus-green sm:size-16">
+            <div className="flex size-14 shrink-0 items-center justify-center rounded-ctl bg-campus-surface text-xl font-bold text-campus-brand sm:size-16">
               {initials}
             </div>
             <div className="min-w-0">
-              <p className="text-sm font-semibold text-campus-green">Student profile</p>
-              <h1 className="text-xl font-bold tracking-tight sm:text-2xl">DormLoot Student</h1>
+              <p className="text-sm font-semibold text-campus-brand">Student profile</p>
+              <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">Your account</h1>
               <p className="truncate text-sm text-campus-muted">{user.email}</p>
             </div>
           </div>
-          {moderator ? <Link href="/admin/reports" className="mt-5 flex min-h-12 items-center justify-between rounded-[14px] bg-campus-green px-4 font-semibold text-white">Review reported listings <span>{reportCount} open</span></Link> : null}
+          {moderator ? <Link href="/admin/reports" className="mt-5 flex min-h-12 items-center justify-between rounded-ctl bg-campus-brand px-4 font-semibold text-white">Review reported listings <span>{reportCount} open</span></Link> : null}
           <div className="mt-6 grid grid-cols-3 gap-3 text-center">
             {[
               [String(listingCount), "Posts"],
               [String(savedCount), "Saved"],
               [String(wantedCount), "Wanted"]
             ].map(([count, label]) => (
-              <div key={label} className="rounded-[14px] bg-campus-paper p-3">
+              <div key={label} className="rounded-ctl bg-campus-paper p-3">
                 <p className="text-xl font-bold text-campus-ink">{count}</p>
                 <p className="mt-1 text-xs font-medium text-campus-muted">{label}</p>
               </div>
@@ -324,16 +327,16 @@ export function ProfileContent() {
           {savedCount === 0 || wantedCount === 0 ? (
             <div className="mt-4 space-y-2">
               {savedCount === 0 ? (
-                <div className="rounded-[14px] bg-campus-paper p-3">
-                  <p className="text-sm font-bold tracking-tight">No saved listings yet</p>
+                <div className="rounded-ctl bg-campus-paper p-3">
+                  <p className="text-sm font-semibold tracking-tight">No saved listings yet</p>
                   <p className="mt-1 text-xs leading-5 text-campus-muted">
                     Save a listing from its details page to track it here.
                   </p>
                 </div>
               ) : null}
               {wantedCount === 0 ? (
-                <div className="rounded-[14px] bg-campus-paper p-3">
-                  <p className="text-sm font-bold tracking-tight">No wanted listings yet</p>
+                <div className="rounded-ctl bg-campus-paper p-3">
+                  <p className="text-sm font-semibold tracking-tight">No wanted listings yet</p>
                   <p className="mt-1 text-xs leading-5 text-campus-muted">
                     Create a Wanted post when you are looking for a dorm item.
                   </p>
@@ -346,14 +349,14 @@ export function ProfileContent() {
         <div className="space-y-4">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p className="text-sm font-semibold text-campus-green">Profile listings</p>
-              <h2 className="mt-1 text-2xl font-bold tracking-tight">
+              <p className="text-sm font-semibold text-campus-brand">Profile listings</p>
+              <h2 className="mt-1 text-2xl font-semibold tracking-tight">
                 {activeTab === "my" ? "My listings" : "Saved listings"}
               </h2>
             </div>
-            <div className="grid w-full grid-cols-2 rounded-[14px] bg-campus-paper p-1 sm:w-auto">
+            <div className="grid w-full grid-cols-2 rounded-ctl bg-campus-paper p-1 sm:w-auto">
               <button
-                className={`min-h-11 rounded-[14px] px-3 text-sm font-semibold transition sm:px-4 ${
+                className={`min-h-11 rounded-ctl px-3 text-sm font-semibold transition sm:px-4 ${
                   activeTab === "my"
                     ? "bg-campus-card text-campus-ink shadow-sm"
                     : "text-campus-muted hover:text-campus-ink"
@@ -364,7 +367,7 @@ export function ProfileContent() {
                 My Listings
               </button>
               <button
-                className={`min-h-11 rounded-[14px] px-3 text-sm font-semibold transition sm:px-4 ${
+                className={`min-h-11 rounded-ctl px-3 text-sm font-semibold transition sm:px-4 ${
                   activeTab === "saved"
                     ? "bg-campus-card text-campus-ink shadow-sm"
                     : "text-campus-muted hover:text-campus-ink"
@@ -380,7 +383,7 @@ export function ProfileContent() {
             <label className="block sm:w-56">
               <span className="sr-only">Filter profile listings by campus</span>
               <select
-                className="min-h-12 w-full rounded-[14px] border border-campus-border bg-campus-card px-5 text-sm font-bold text-campus-ink shadow-sm outline-none transition focus:border-campus-green focus:ring-4 focus:ring-campus-green/10 sm:min-h-11"
+                className="min-h-12 w-full rounded-ctl border border-campus-border bg-campus-card px-5 text-sm font-bold text-campus-ink shadow-sm outline-none transition focus:border-campus-brand focus:shadow-focus sm:min-h-11"
                 onChange={(event) => setActiveCampusFilter(event.target.value)}
                 value={activeCampusFilter}
               >
@@ -394,7 +397,7 @@ export function ProfileContent() {
             </label>
           ) : null}
           {activeTab === "my" && deleteError ? (
-            <div className="rounded-[14px] bg-campus-coral/10 p-4 text-sm font-medium leading-6 text-campus-ink">
+            <div className="rounded-ctl bg-campus-danger/10 p-4 text-sm font-medium leading-6 text-campus-ink">
               {deleteError}
             </div>
           ) : null}
@@ -409,34 +412,75 @@ export function ProfileContent() {
                   : "Mark as Sold";
 
                 return (
-                  <div className="space-y-3" key={listing.id}>
-                    {hiddenIds.has(listing.id) ? <p className="rounded-[14px] bg-campus-coral/10 p-3 text-sm">Removed after review. Contact <a className="underline" href="mailto:dormdrop.support@gmail.com">DormLoot support</a> with any questions.</p> : null}
-                    <ListingCard listing={listing} />
-                    <div className="grid grid-cols-1 gap-2 min-[380px]:grid-cols-2">
-                      <Link
-                        className="flex min-h-11 items-center justify-center rounded-[14px] bg-campus-paper px-5 text-sm font-semibold text-campus-ink transition hover:bg-slate-50"
-                        href={`/listings/${listing.id}/edit`}
-                      >
-                        Edit
-                      </Link>
-                      <button
-                        className="min-h-11 rounded-[14px] border border-campus-coral/30 bg-campus-card px-5 text-sm font-semibold text-campus-coral transition hover:bg-campus-coral hover:text-white disabled:cursor-not-allowed disabled:opacity-70"
-                        disabled={isDeleting}
-                        onClick={() => handleDeleteListing(listing.id)}
-                        type="button"
-                      >
-                        {isDeleting ? "Deleting..." : "Delete"}
-                      </button>
-                      <button
-                        className="min-h-12 rounded-[14px] bg-campus-hover px-5 text-sm font-semibold text-white transition hover:bg-campus-green disabled:cursor-not-allowed disabled:opacity-70 min-[380px]:col-span-2"
-                        disabled={isUpdatingSold}
-                        onClick={() => handleToggleSoldListing(sourceListing)}
-                        type="button"
-                      >
-                        {isUpdatingSold ? "Updating..." : soldButtonLabel}
-                      </button>
+                  // Owner controls live inside the card so rows stay aligned.
+                  <Card className="flex flex-col overflow-hidden" key={listing.id}>
+                    <Link className="relative block aspect-[4/3] bg-campus-surface" href={`/listings/${listing.id}`}>
+                      {isPlaceholderImageUrl(listing.image) ? (
+                        <ListingImagePlaceholder />
+                      ) : (
+                        <Image
+                          alt=""
+                          className="h-full w-full object-cover"
+                          height={620}
+                          src={listing.image}
+                          unoptimized={listing.image.startsWith("http")}
+                          width={760}
+                        />
+                      )}
+                      <span className="absolute left-3 top-3 flex gap-1.5">
+                        {listing.sold ? <Badge tone="solid">Sold</Badge> : null}
+                        {hiddenIds.has(listing.id) ? <Badge tone="danger">Removed</Badge> : null}
+                      </span>
+                    </Link>
+
+                    <div className="flex flex-1 flex-col gap-3 p-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <h3 className="line-clamp-2 text-[15px] font-semibold leading-snug text-campus-ink">
+                          <Link href={`/listings/${listing.id}`}>{listing.title}</Link>
+                        </h3>
+                        {listing.price ? (
+                          <p className="tabular shrink-0 text-[15px] font-semibold text-campus-ink">{listing.price}</p>
+                        ) : null}
+                      </div>
+                      <p className="text-xs text-campus-subtle">
+                        {listing.campus} · {listing.sold ? "Sold" : "Available"}
+                      </p>
+
+                      {hiddenIds.has(listing.id) ? (
+                        <p className="rounded-ctl bg-campus-dangerBg px-3 py-2 text-xs leading-relaxed text-campus-ink">
+                          Removed after review. Contact{" "}
+                          <a className="underline" href="mailto:dormdrop.support@gmail.com">
+                            support
+                          </a>{" "}
+                          with any questions.
+                        </p>
+                      ) : null}
+
+                      <div className="mt-auto flex flex-wrap gap-2 border-t border-campus-border pt-3">
+                        <Button
+                          disabled={isUpdatingSold}
+                          onClick={() => handleToggleSoldListing(sourceListing)}
+                          size="sm"
+                          type="button"
+                        >
+                          {isUpdatingSold ? "Updating" : soldButtonLabel}
+                        </Button>
+                        <Link className={buttonClass("secondary", "sm")} href={`/listings/${listing.id}/edit`}>
+                          Edit
+                        </Link>
+                        <Button
+                          className="ml-auto"
+                          disabled={isDeleting}
+                          onClick={() => handleDeleteListing(listing.id)}
+                          size="sm"
+                          type="button"
+                          variant="danger"
+                        >
+                          {isDeleting ? "Deleting" : "Delete"}
+                        </Button>
+                      </div>
                     </div>
-                  </div>
+                  </Card>
                 );
               })}
             </div>
@@ -451,9 +495,9 @@ export function ProfileContent() {
             </div>
           ) : null}
           {activeTab === "my" && showMyListingsEmptyState ? (
-            <div className="rounded-[20px] border border-campus-border bg-campus-card p-8 text-center shadow-soft">
-              <p className="text-sm font-semibold text-campus-green">No listings yet</p>
-              <h3 className="mt-2 text-xl font-bold tracking-tight">{activeCampusFilter === "All"
+            <div className="rounded-card border border-campus-border bg-campus-card p-8 text-center shadow-card">
+              <p className="text-sm font-semibold text-campus-brand">No listings yet</p>
+              <h3 className="mt-2 text-xl font-semibold tracking-tight">{activeCampusFilter === "All"
                 ? "Your posts will appear here."
                 : `No ${activeCampusFilter} posts yet.`}</h3>
               <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-campus-muted">
@@ -462,7 +506,7 @@ export function ProfileContent() {
                   : "Switch campuses or create a new listing for this campus."}
               </p>
               <Link
-                className="mt-5 inline-flex min-h-12 items-center rounded-[14px] bg-campus-green px-6 text-sm font-semibold text-white transition hover:bg-campus-hover"
+                className="mt-5 inline-flex min-h-12 items-center rounded-ctl bg-campus-brand px-6 text-sm font-semibold text-white transition hover:bg-campus-brandHover"
                 href="/create"
               >
                 Create listing
@@ -470,14 +514,14 @@ export function ProfileContent() {
             </div>
           ) : null}
           {activeTab === "saved" && showSavedListingsEmptyState ? (
-            <div className="rounded-[20px] border border-campus-border bg-campus-card p-8 text-center shadow-soft">
-              <p className="text-sm font-semibold text-campus-green">No saved listings yet</p>
-              <h3 className="mt-2 text-xl font-bold tracking-tight">Saved listings will appear here.</h3>
+            <div className="rounded-card border border-campus-border bg-campus-card p-8 text-center shadow-card">
+              <p className="text-sm font-semibold text-campus-brand">No saved listings yet</p>
+              <h3 className="mt-2 text-xl font-semibold tracking-tight">Saved listings will appear here.</h3>
               <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-campus-muted">
                 Save a listing from its details page when you want to come back to it later.
               </p>
               <Link
-                className="mt-5 inline-flex min-h-12 items-center rounded-[14px] bg-campus-green px-6 text-sm font-semibold text-white transition hover:bg-campus-hover"
+                className="mt-5 inline-flex min-h-12 items-center rounded-ctl bg-campus-brand px-6 text-sm font-semibold text-white transition hover:bg-campus-brandHover"
                 href="/browse"
               >
                 Browse listings

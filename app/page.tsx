@@ -1,171 +1,125 @@
-import Link from "next/link";
+import Image from "next/image";
+import { ChatCircle, ShieldCheck, Tag } from "@phosphor-icons/react/dist/ssr";
 import { CategoryButtons } from "@/components/category-buttons";
 import { ListingCard } from "@/components/listing-card";
-import { getKnownCampusCount } from "@/lib/campuses";
+import { isPlaceholderImageUrl } from "@/components/listing-image-placeholder";
+import { ButtonLink, EmptyState } from "@/components/ui";
 import { getListings } from "@/lib/supabase/listings";
 
 export const dynamic = "force-dynamic";
 
+const howItWorks = [
+  {
+    icon: Tag,
+    title: "Post what you are done with",
+    body: "Add a few photos, set a price or mark it free, and pick your campus."
+  },
+  {
+    icon: ChatCircle,
+    title: "Message without sharing your number",
+    body: "Buyers reach you in DormLoot. You arrange pickup when it suits you."
+  },
+  {
+    icon: ShieldCheck,
+    title: "Meet somewhere public",
+    body: "Trade in a lobby or lounge, check the item, and mark it sold when it goes."
+  }
+];
+
 export default async function HomePage() {
   const listings = await getListings();
-  const activeListingsList = listings.filter((listing) => !listing.sold);
-  const newestListings = activeListingsList.slice(0, 3);
-  const activeListings = activeListingsList.length;
-  const campusCount = getKnownCampusCount(activeListingsList.map((listing) => listing.campus));
-  const photoCount = activeListingsList.reduce(
-    (count, listing) => count + listing.images.filter((image) => image.startsWith("http")).length,
-    0
-  );
+  const availableListings = listings.filter((listing) => !listing.sold);
+  const newestListings = availableListings.slice(0, 6);
+  const heroListing = availableListings.find((listing) => !isPlaceholderImageUrl(listing.image));
 
   return (
-    <main className="mx-auto flex w-full max-w-6xl flex-col gap-12 px-4 py-5 sm:px-6 sm:py-8 lg:px-8">
-      <section className="relative overflow-hidden rounded-[2rem] border border-campus-border bg-campus-card shadow-premium">
-        <div className="grid gap-6 bg-[linear-gradient(135deg,#1E40AF_0%,#172554_100%)] p-5 sm:p-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:p-10">
-          <div className="space-y-6">
-            <div className="inline-flex rounded-[14px] border border-white/20 bg-white/10 px-4 py-2 text-xs font-black uppercase tracking-[0.16em] text-white shadow-sm">
-              Campus reuse, made simple
+    <main className="mx-auto flex w-full max-w-6xl flex-col gap-14 px-4 py-6 sm:px-6 sm:py-10 lg:px-8">
+      <section className="grid items-center gap-8 lg:grid-cols-[1.05fr_0.95fr]">
+        <div className="space-y-6">
+          <h1 className="text-4xl font-semibold leading-[1.08] tracking-tight text-campus-ink sm:text-5xl">
+            Dorm stuff, passed
+            <br />
+            to the next student.
+          </h1>
+          <p className="max-w-prose text-base leading-relaxed text-campus-muted">
+            Buy, sell and give away dorm items with other students at Rose Hill and Lincoln Center.
+          </p>
+          <div className="flex flex-wrap gap-3">
+            <ButtonLink href="/browse" size="lg">
+              Browse items
+            </ButtonLink>
+            <ButtonLink href="/create" size="lg" variant="secondary">
+              Post an item
+            </ButtonLink>
+          </div>
+        </div>
+
+        {heroListing ? (
+          <div className="relative overflow-hidden rounded-card border border-campus-border bg-campus-surface shadow-card">
+            <div className="aspect-[4/3]">
+              <Image
+                alt={heroListing.title}
+                className="h-full w-full object-cover"
+                height={900}
+                src={heroListing.image}
+                unoptimized={heroListing.image.startsWith("http")}
+                width={1200}
+              />
             </div>
-            <div className="space-y-4">
-              <h1 className="max-w-3xl text-4xl font-black tracking-tight text-white sm:text-5xl lg:text-6xl">
-                A trusted campus marketplace for dorm essentials.
-              </h1>
-              <p className="max-w-2xl text-base leading-7 text-white/85 sm:text-lg">
-                DormLoot helps students give away, sell, and request dorm items by campus, so useful things stay nearby and move-out feels easier.
+            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-campus-ink/85 to-transparent p-4 pt-12">
+              <p className="text-sm font-semibold text-white">{heroListing.title}</p>
+              <p className="text-xs text-white/80">
+                {heroListing.price ? `${heroListing.price} · ` : ""}
+                {heroListing.campus}
               </p>
             </div>
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <Link
-                href="/browse"
-                className="inline-flex min-h-12 items-center justify-center rounded-[14px] bg-campus-green px-6 text-sm font-bold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-campus-hover hover:shadow-lg"
-              >
-                Browse listings
-              </Link>
-              <Link
-                href="/create"
-                className="inline-flex min-h-12 items-center justify-center rounded-[14px] border border-white/25 bg-white/10 px-6 text-sm font-bold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-white/20 hover:shadow-md"
-              >
-                Post an item
-              </Link>
-            </div>
-            <div className="grid gap-3 pt-2 sm:grid-cols-3">
-              {[
-                ["Campus-based", "Find items around your school."],
-                ["Student-first", "Simple posts, clear categories."],
-                ["Move-out ready", "Free, for sale, and wanted in one place."]
-              ].map(([title, body]) => (
-                <div key={title} className="rounded-[14px] border border-white/20 bg-white/10 p-4 shadow-sm backdrop-blur">
-                  <p className="text-sm font-black text-white">{title}</p>
-                  <p className="mt-1 text-xs leading-5 text-white/75">{body}</p>
-                </div>
-              ))}
-            </div>
           </div>
-
-          <div className="space-y-3 lg:pl-4">
-            <div className="rounded-[20px] border border-campus-border bg-campus-card p-4 shadow-premium">
-              <div className="flex items-center justify-between gap-3 border-b border-campus-border pb-3">
-                <div>
-                  <p className="text-sm font-bold text-campus-green">Live campus board</p>
-                  <p className="mt-1 text-xs font-semibold text-campus-muted">Newest active listings</p>
-                </div>
-                <span className="rounded-[14px] bg-campus-successBg px-3 py-1 text-xs font-black text-campus-success">
-                  Live
-                </span>
-              </div>
-              <div className="mt-4 space-y-3">
-                {newestListings.length > 0 ? (
-                  newestListings.map((listing) => (
-                    <Link key={listing.id} className="flex items-center gap-3 rounded-[14px] bg-campus-paper p-3 transition hover:bg-slate-50" href={"/listings/" + listing.id}>
-                      <div className="flex size-12 shrink-0 items-center justify-center rounded-[14px] bg-campus-card text-sm font-black text-campus-green shadow-sm">
-                        {listing.type === "Free" ? "Free" : listing.type === "Wanted" ? "Need" : listing.price}
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-black text-campus-ink">{listing.title}</p>
-                        <p className="mt-1 truncate text-xs font-semibold text-campus-muted">{listing.campus} / {listing.type}</p>
-                      </div>
-                    </Link>
-                  ))
-                ) : (
-                  <div className="rounded-[14px] bg-campus-paper p-5 text-center">
-                    <p className="text-sm font-black text-campus-ink">No listings yet.</p>
-                    <p className="mt-2 text-xs font-semibold leading-5 text-campus-muted">
-                      Be the first student to post an item.
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-            <div className="grid grid-cols-3 gap-3 text-center">
-              {[
-                [String(activeListings), "Active"],
-                [String(campusCount), "Campuses"],
-                [String(photoCount), "Photos"]
-              ].map(([count, label]) => (
-                <div key={label} className="rounded-[14px] border border-campus-border bg-campus-card p-3 shadow-sm">
-                  <p className="text-2xl font-black text-campus-green">{count}</p>
-                  <p className="mt-1 text-xs font-semibold text-campus-muted">{label}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+        ) : null}
       </section>
 
-      <section className="grid gap-3 sm:grid-cols-3">
-        {[
-          [String(activeListings), "Active listings", "Dorm items currently available or requested."],
-          [String(campusCount), "Campuses", "School communities represented on DormLoot."],
-          [String(photoCount), "Photos shared", "Real item photos and listing visuals in the marketplace."]
-        ].map(([value, label, description]) => (
-          <div
-            className="rounded-[20px] border border-campus-border bg-campus-card p-5 shadow-soft transition hover:-translate-y-0.5 hover:shadow-premium"
-            key={label}
-          >
-            <p className="text-3xl font-black tracking-tight text-campus-green">{value}</p>
-            <h2 className="mt-2 text-base font-black text-campus-ink">{label}</h2>
-            <p className="mt-2 text-sm leading-6 text-campus-muted">{description}</p>
-          </div>
-        ))}
+      <section className="space-y-4">
+        <h2 className="text-lg font-semibold tracking-tight text-campus-ink">Start with what you need</h2>
+        <CategoryButtons />
       </section>
 
-      <section className="grid gap-4 rounded-[20px] border border-campus-border bg-campus-card/95 p-5 shadow-soft sm:p-6 lg:grid-cols-[0.8fr_1.2fr] lg:items-center">
-        <div>
-          <p className="text-sm font-bold text-campus-green">Quick filters</p>
-          <h2 className="mt-1 text-2xl font-black tracking-tight">Start with what you need</h2>
-          <p className="mt-2 text-sm leading-6 text-campus-muted">
-            Browse by Free, For Sale, or Wanted before narrowing by campus.
-          </p>
+      <section className="space-y-5">
+        <div className="flex items-end justify-between gap-4">
+          <h2 className="text-lg font-semibold tracking-tight text-campus-ink">Recently posted</h2>
+          <ButtonLink href="/browse" size="sm" variant="ghost">
+            View all
+          </ButtonLink>
         </div>
-        <div className="lg:justify-self-end">
-          <CategoryButtons />
-        </div>
-      </section>
 
-      <section className="space-y-6 pb-8">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="text-sm font-bold text-campus-green">Fresh listings</p>
-            <h2 className="mt-1 text-2xl font-black tracking-tight">Recently posted around campus</h2>
-          </div>
-          <Link href="/browse" className="inline-flex min-h-11 items-center rounded-[14px] bg-campus-card px-5 text-sm font-bold text-campus-green shadow-sm transition hover:bg-slate-50 hover:text-campus-hover">
-            View all listings
-          </Link>
-        </div>
         {newestListings.length > 0 ? (
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
             {newestListings.map((listing) => (
               <ListingCard key={listing.id} listing={listing} />
             ))}
           </div>
         ) : (
-          <div className="rounded-[20px] border border-campus-border bg-campus-card p-8 text-center shadow-soft sm:p-10">
-            <p className="text-sm font-bold text-campus-green">No listings yet</p>
-            <h2 className="mt-2 text-2xl font-black tracking-tight">Be the first student to post an item.</h2>
-            <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-campus-muted">
-              Once students post real DormLoot listings, the newest active items will appear here.
-            </p>
-          </div>
+          <EmptyState
+            action={<ButtonLink href="/create">Post the first item</ButtonLink>}
+            body="DormLoot is brand new on campus. The first few listings make it useful for everyone else."
+            title="Nothing posted yet"
+          />
         )}
+      </section>
+
+      <section className="border-t border-campus-border pt-8">
+        <div className="grid gap-6 sm:grid-cols-3 sm:gap-10">
+          {howItWorks.map((step) => {
+            const Icon = step.icon;
+            return (
+              <div className="flex gap-3" key={step.title}>
+                <Icon aria-hidden className="mt-0.5 shrink-0 text-campus-brand" size={20} weight="duotone" />
+                <div className="space-y-1">
+                  <h3 className="text-[15px] font-semibold text-campus-ink">{step.title}</h3>
+                  <p className="text-sm leading-relaxed text-campus-muted">{step.body}</p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </section>
     </main>
   );

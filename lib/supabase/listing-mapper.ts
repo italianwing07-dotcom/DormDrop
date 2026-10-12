@@ -45,6 +45,11 @@ function formatListingPrice(
 ) {
   const trimmedPrice = String(price ?? "").trim();
 
+  // A Wanted post is a request, so it has no asking price to show.
+  if (category === "Wanted") {
+    return "";
+  }
+
   if (category === "Free") {
     return "Free";
   }
@@ -92,9 +97,11 @@ export function mapListingRow(row: ListingRow): Listing {
     sold: row.sold ?? false,
     createdAt: row.created_at,
     seller: {
-      name: "DormLoot Student",
+      // No display names exist yet, so the UI identifies sellers by campus
+      // rather than inventing a name for every account.
+      name: "",
       dorm: getCampusDisplayName(row.campus),
-      year: "Student",
+      year: "",
       email: row.seller_email
     }
   };

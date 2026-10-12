@@ -1,21 +1,14 @@
 import { CreateListingForm } from "@/components/create-listing-form";
+import { PageHeader } from "@/components/ui";
 
 export default function CreateListingPage() {
   return (
-    <main className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 lg:px-8">
-      <section className="space-y-6">
-        <div className="rounded-[20px] border border-campus-border bg-campus-card p-5 shadow-soft sm:p-6">
-          <p className="text-sm font-semibold text-campus-green">Create listing</p>
-          <h1 className="mt-1 text-3xl font-black tracking-tight sm:text-4xl">
-            Post a dorm item
-          </h1>
-          <p className="mt-2 text-sm leading-6 text-campus-muted">
-            Add the item details. DormLoot will save this listing to Supabase.
-          </p>
-        </div>
-
-        <CreateListingForm />
-      </section>
+    <main className="mx-auto w-full max-w-3xl space-y-6 px-4 py-6 sm:px-6 sm:py-10 lg:px-8">
+      <PageHeader
+        lead="Add photos and a few details. You can edit or remove the listing at any time."
+        title="Post a dorm item"
+      />
+      <CreateListingForm />
     </main>
   );
 }

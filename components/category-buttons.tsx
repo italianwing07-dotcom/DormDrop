@@ -1,20 +1,18 @@
-const categories = [
-  { label: "Free", className: "border border-campus-border bg-campus-card text-campus-ink" },
-  { label: "For Sale", className: "bg-campus-gold text-campus-ink" },
-  { label: "Wanted", className: "border border-campus-green/20 bg-slate-50 text-campus-green" }
-];
+import Link from "next/link";
+
+const categories = ["Free", "For Sale", "Wanted"] as const;
 
 export function CategoryButtons() {
   return (
-    <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-2 sm:pb-1">
+    <div className="flex flex-wrap gap-2">
       {categories.map((category) => (
-        <button
-          className={"min-h-12 shrink-0 rounded-[14px] px-5 text-sm font-black shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:min-h-11 " + category.className}
-          key={category.label}
-          type="button"
+        <Link
+          className="min-h-11 rounded-full border border-campus-border bg-campus-card px-5 py-2.5 text-sm font-medium text-campus-ink transition hover:border-campus-brand/40 hover:bg-campus-soft hover:text-campus-brand"
+          href={`/browse?category=${encodeURIComponent(category)}`}
+          key={category}
         >
-          {category.label}
-        </button>
+          {category}
+        </Link>
       ))}
     </div>
   );

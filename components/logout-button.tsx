@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { signOut } from "@/lib/supabase/auth";
 import { getBrowserSupabaseClient } from "@/lib/supabase/browser-client";
+import { buttonClass } from "@/components/ui";
 
 export function LogoutButton() {
   const router = useRouter();
@@ -37,23 +38,21 @@ export function LogoutButton() {
 
   if (!email) {
     return (
-      <Link
-        className="flex min-h-10 shrink-0 items-center rounded-[14px] bg-campus-green px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-campus-hover"
-        href="/login"
-      >
-        Login
+      <Link className={buttonClass("primary", "sm", "shrink-0")} href="/login">
+        Log in
       </Link>
     );
   }
 
   return (
     <button
-      className="min-h-10 shrink-0 rounded-[14px] bg-campus-green px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-campus-hover disabled:opacity-70"
+      aria-label={`Log out of ${email}`}
+      className={buttonClass("secondary", "sm", "shrink-0")}
       disabled={isLoggingOut}
       onClick={handleLogout}
       type="button"
     >
-      {isLoggingOut ? "Logging out" : "Logout"}
+      {isLoggingOut ? "Logging out" : "Log out"}
     </button>
   );
 }

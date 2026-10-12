@@ -2,29 +2,23 @@ import Image from "next/image";
 import Link from "next/link";
 import { ListingImagePlaceholder, isPlaceholderImageUrl } from "@/components/listing-image-placeholder";
 import { SaveListingButton } from "@/components/save-listing-button";
+import { Badge } from "@/components/ui";
 import { formatPostedDate } from "@/lib/format-date";
 import type { Listing } from "@/lib/listings";
 
-const badgeStyles: Record<Listing["type"], string> = {
-  Free: "border border-campus-border bg-campus-card text-campus-ink",
-  "For Sale": "bg-campus-gold text-campus-ink",
-  Wanted: "border border-campus-green/20 bg-slate-50 text-campus-green"
-};
-
 export function ListingCard({ listing }: { listing: Listing }) {
-  const badgeClass = badgeStyles[listing.type] ?? badgeStyles["For Sale"];
   const postedDate = formatPostedDate(listing.createdAt);
   const coverImageUrl = listing.image;
   const hasUploadedImage = !isPlaceholderImageUrl(coverImageUrl);
   const isRemoteImage = coverImageUrl.startsWith("http");
 
   return (
-    <article className="group overflow-hidden rounded-[20px] border border-campus-border bg-campus-card shadow-sm ring-1 ring-campus-ink/5 transition duration-300 hover:-translate-y-1.5 hover:border-campus-green/30 hover:shadow-premium hover:ring-campus-green/10">
-      <div className="relative aspect-[5/4] overflow-hidden bg-campus-surface sm:aspect-[4/3]">
+    <article className="group relative flex flex-col overflow-hidden rounded-card border border-campus-border bg-campus-card shadow-card transition duration-200 hover:border-campus-borderStrong hover:shadow-pop">
+      <div className="relative aspect-[4/3] overflow-hidden bg-campus-surface">
         {hasUploadedImage ? (
           <Image
-            alt={listing.title}
-            className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.025]"
+            alt=""
+            className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.02]"
             height={620}
             unoptimized={isRemoteImage}
             src={coverImageUrl}
@@ -33,48 +27,35 @@ export function ListingCard({ listing }: { listing: Listing }) {
         ) : (
           <ListingImagePlaceholder category={listing.type} title={listing.title} />
         )}
-        <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-3 p-3">
-          <div className="flex flex-wrap gap-2">
-            <span className={"rounded-[14px] px-3 py-1 text-xs font-black shadow-sm " + badgeClass}>
-              {listing.type}
-            </span>
-            {listing.sold ? (
-              <span className="rounded-[14px] bg-campus-successBg px-3 py-1 text-xs font-black text-campus-success shadow-sm">
-                Sold
-              </span>
-            ) : null}
+
+        <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-2 p-3">
+          <div className="flex flex-wrap gap-1.5">
+            {listing.type === "Free" ? <Badge tone="brand">Free</Badge> : null}
+            {listing.type === "Wanted" ? <Badge tone="neutral">Wanted</Badge> : null}
+            {listing.sold ? <Badge tone="solid">Sold</Badge> : null}
           </div>
-          <SaveListingButton listingId={listing.id} variant="icon" />
-        </div>
-        <div className="absolute bottom-3 left-3 rounded-[14px] bg-campus-card/95 px-3 py-1.5 text-xs font-black text-campus-ink shadow-sm backdrop-blur">
-          {listing.campus}
+          <SaveListingButton listingId={listing.id} listingTitle={listing.title} variant="icon" />
         </div>
       </div>
-      <div className="space-y-3 p-4 sm:p-5">
-        <div className="space-y-2">
-          <div className="flex items-start justify-between gap-3">
-            <h3 className="line-clamp-2 text-base font-black tracking-tight text-campus-ink sm:text-lg">
+
+      <div className="flex flex-1 flex-col gap-1.5 p-3 sm:gap-2 sm:p-4">
+        <div className="flex items-start justify-between gap-3">
+          <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-campus-ink sm:text-[15px]">
+            {/* The whole card is the link; the overlay keeps the save button clickable. */}
+            <Link className="after:absolute after:inset-0" href={"/listings/" + listing.id}>
               {listing.title}
-            </h3>
-            <p className="shrink-0 text-xl font-black tracking-tight text-campus-ink sm:text-2xl">
-              {listing.price}
-            </p>
-          </div>
-          <p className="line-clamp-2 text-sm leading-6 text-campus-muted">
-            {listing.description}
-          </p>
+            </Link>
+          </h3>
+          {listing.price ? (
+            <p className="tabular shrink-0 text-sm font-semibold text-campus-ink sm:text-base">{listing.price}</p>
+          ) : null}
         </div>
-        <div className="flex items-center justify-between gap-3 border-t border-campus-border pt-3">
-          <p className="text-xs font-bold text-campus-muted">
-            {postedDate === "Posted today" ? "Recently posted" : postedDate}
-          </p>
-          <Link
-            className="flex min-h-10 shrink-0 items-center rounded-[14px] bg-campus-green px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-campus-hover hover:shadow-md active:scale-[0.98]"
-            href={"/listings/" + listing.id}
-          >
-            Details
-          </Link>
-        </div>
+
+        <p className="line-clamp-2 hidden text-sm leading-relaxed text-campus-muted sm:block">{listing.description}</p>
+
+        <p className="mt-auto pt-1.5 text-[11px] text-campus-subtle sm:pt-2 sm:text-xs">
+          {listing.campus} · {postedDate}
+        </p>
       </div>
     </article>
   );

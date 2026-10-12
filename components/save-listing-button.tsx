@@ -2,10 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Heart } from "@phosphor-icons/react";
 import { getBrowserSupabaseClient } from "@/lib/supabase/browser-client";
+import { buttonClass } from "@/components/ui";
 
 type SaveListingButtonProps = {
   listingId: string;
+  listingTitle?: string;
   variant?: "full" | "icon";
 };
 
@@ -17,7 +20,7 @@ function announceSavedListingChange(listingId: string, isSaved: boolean) {
   );
 }
 
-export function SaveListingButton({ listingId, variant = "full" }: SaveListingButtonProps) {
+export function SaveListingButton({ listingId, listingTitle, variant = "full" }: SaveListingButtonProps) {
   const router = useRouter();
   const [userId, setUserId] = useState<string | null>(null);
   const [isSaved, setIsSaved] = useState(false);
@@ -125,42 +128,46 @@ export function SaveListingButton({ listingId, variant = "full" }: SaveListingBu
     }
   }
 
+  const label = listingTitle
+    ? `${isSaved ? "Remove" : "Save"} ${listingTitle} ${isSaved ? "from" : "to"} your saved listings`
+    : isSaved
+      ? "Remove from saved listings"
+      : "Save listing";
+
   if (variant === "icon") {
     return (
-      <div className="space-y-1">
-        <button
-          aria-label={isSaved ? "Unsave listing" : "Save listing"}
-          aria-pressed={isSaved}
-          className={
-            "flex size-11 items-center justify-center rounded-[14px] border border-white/70 bg-campus-card/95 text-lg font-black shadow-sm backdrop-blur transition hover:scale-105 hover:bg-white disabled:cursor-not-allowed disabled:opacity-70 " +
-            (isSaved ? "text-campus-coral" : "text-campus-ink")
-          }
-          disabled={isLoading || isSaving}
-          onClick={handleToggleSaved}
-          type="button"
-        >
-          {isSaved ? "♥" : "♡"}
-        </button>
-        {error ? <p className="sr-only">{error}</p> : null}
-      </div>
-    );
-  }
-
-  return (
-    <div className="mt-4 space-y-2">
+      // z-10 keeps this above the card's full-surface link overlay.
       <button
-        className="min-h-12 w-full rounded-[14px] border border-campus-border bg-campus-paper px-6 text-sm font-bold text-campus-ink transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-70"
+        aria-label={label}
+        aria-pressed={isSaved}
+        className={
+          "relative z-10 flex size-10 items-center justify-center rounded-full border border-campus-border bg-campus-card/95 shadow-sm backdrop-blur transition hover:bg-campus-card disabled:cursor-not-allowed disabled:opacity-60 " +
+          (isSaved ? "text-campus-danger" : "text-campus-muted hover:text-campus-ink")
+        }
         disabled={isLoading || isSaving}
         onClick={handleToggleSaved}
         type="button"
       >
-        {isSaving ? "Saving..." : isSaved ? "Unsave" : "Save"}
+        <Heart size={19} weight={isSaved ? "fill" : "regular"} />
+        {error ? <span className="sr-only">{error}</span> : null}
       </button>
-      {error ? (
-        <p className="text-sm font-medium leading-6 text-campus-coral">
-          {error}
-        </p>
-      ) : null}
+    );
+  }
+
+  return (
+    <div className="space-y-2">
+      <button
+        aria-label={label}
+        aria-pressed={isSaved}
+        className={buttonClass("secondary", "lg", "w-full")}
+        disabled={isLoading || isSaving}
+        onClick={handleToggleSaved}
+        type="button"
+      >
+        <Heart size={18} weight={isSaved ? "fill" : "regular"} />
+        {isSaving ? "Saving" : isSaved ? "Saved" : "Save"}
+      </button>
+      {error ? <p className="text-sm leading-relaxed text-campus-danger">{error}</p> : null}
     </div>
   );
 }
