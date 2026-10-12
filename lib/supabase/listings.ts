@@ -3,6 +3,12 @@ import { supabase } from "@/lib/supabase/client";
 import { mapListingRow } from "@/lib/supabase/listing-mapper";
 import type { NewListing } from "@/lib/supabase/types";
 
+// Everything except seller_email. Anonymous visitors can browse listings, so a
+// public read must not carry a student's school email, in the API response or
+// in server-rendered HTML. Signed-in users fetch contact details separately.
+const PUBLIC_LISTING_COLUMNS =
+  "id, user_id, title, description, price, category, campus, image_url, image_urls, sold, created_at";
+
 export { mapListingRow } from "@/lib/supabase/listing-mapper";
 
 export async function getListings() {
@@ -12,7 +18,7 @@ export async function getListings() {
 
   const { data, error } = await supabase
     .from("listings")
-    .select("*")
+    .select(PUBLIC_LISTING_COLUMNS)
     .order("created_at", { ascending: false });
     
 
@@ -30,7 +36,7 @@ export async function getListingsByUser(userId: string) {
 
   const { data, error } = await supabase
     .from("listings")
-    .select("*")
+    .select(PUBLIC_LISTING_COLUMNS)
     .eq("user_id", userId)
     .order("created_at", { ascending: false });
 
@@ -48,7 +54,7 @@ export async function getListing(id: string) {
 
   const { data, error } = await supabase
     .from("listings")
-    .select("*")
+    .select(PUBLIC_LISTING_COLUMNS)
     .eq("id", id)
     .single();
 

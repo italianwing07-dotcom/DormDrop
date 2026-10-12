@@ -270,7 +270,13 @@ using (
 
 -- Required Data API grants. RLS policies below still control which rows each role can access.
 grant usage on schema public to anon, authenticated;
-grant select on public.listings to anon, authenticated;
+-- Anonymous visitors can browse listings but must not receive seller_email,
+-- so anon gets column level select and authenticated gets the whole row.
+grant select on public.listings to authenticated;
+grant select (
+  id, user_id, title, description, price, category, campus,
+  image_url, image_urls, sold, created_at
+) on public.listings to anon;
 grant insert, update, delete on public.listings to authenticated;
 grant select, insert, delete on public.saved_listings to authenticated;
 grant select, insert on public.conversations to authenticated;

@@ -239,3 +239,36 @@ test("photo objects belong to the uploader's own folder", async () => {
     await db.close();
   }
 });
+
+test("a signed-out visitor cannot read seller emails", async () => {
+  const db = await createIsolatedDb();
+  try {
+    await seed(db);
+
+    // The rows are public on purpose; the contact column is not.
+    const publicColumns = (
+      await asUser(db, null, "select id, title, price, campus, sold from public.listings")
+    )[0].rows;
+    assert.equal(publicColumns.length, 1, "anon can still browse listings");
+
+    const denied = await expectDenied(db, null, "select seller_email from public.listings");
+    assert.match(
+      String(denied),
+      /permission denied/i,
+      "anon must be refused the seller_email column"
+    );
+
+    // Selecting everything is how the old code read listings, and it must now
+    // fail for anon rather than quietly returning the email.
+    const deniedStar = await expectDenied(db, null, "select * from public.listings");
+    assert.match(String(deniedStar), /permission denied/i, "anon must be refused select *");
+
+    // A signed-in student still gets contact details.
+    const asStudent = (
+      await asUser(db, BUYER, `select seller_email from public.listings where id = '${LISTING}'`)
+    )[0].rows;
+    assert.equal(asStudent[0].seller_email, "seller@example.invalid");
+  } finally {
+    await db.close();
+  }
+});

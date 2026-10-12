@@ -40,24 +40,31 @@ These cannot be closed from the repository.
    project **before** deploying the matching app revision. It changes policies,
    grants, triggers, Realtime publication membership and storage restrictions.
    `supabase/schema.sql` is the same setup for a fresh project.
-2. **Run `supabase/check-launch-readiness.sql`.** It uses generated fixtures
+2. **Apply `supabase/migrations/20261012180000_restrict_seller_email.sql`**, which
+   stops anonymous reads from returning `seller_email`. Apply it together with
+   (or just after) the release that stops selecting `*` as anon. Applied under
+   an older release, anonymous browsing breaks: PostgREST rejects the whole
+   query when it names a column the role cannot read. Rolling back the app
+   without rolling back this grant has the same effect, so revert both or
+   neither.
+3. **Run `supabase/check-launch-readiness.sql`.** It uses generated fixtures
    inside a transaction and rolls them back. It sends no email.
-3. **Auth URL configuration.** Set Site URL to the real production domain and
+4. **Auth URL configuration.** Set Site URL to the real production domain and
    add `https://<your-production-domain>/reset-password` to Redirect URLs. Add
    `http://localhost:3000/reset-password` for local testing. Keep
    `{{ .ConfirmationURL }}` in the recovery template. A redirect URL that does
    not match is the most likely cause of a broken reset link.
-4. **Email delivery.** Confirm whether the project still uses Supabase's
+5. **Email delivery.** Confirm whether the project still uses Supabase's
    built-in sender. Its rate limits are not sized for a real cohort; check the
    current limits in the dashboard and decide whether custom SMTP is needed
    before inviting students.
-5. **Storage bucket.** Confirm `listing-images` enforces the 5 MB limit and the
+6. **Storage bucket.** Confirm `listing-images` enforces the 5 MB limit and the
    JPEG/PNG/WEBP/GIF type list. The migration sets these; verify on the live
    bucket.
-6. **Moderator account.** Choose the confirmed owner account and insert it into
+7. **Moderator account.** Choose the confirmed owner account and insert it into
    `public.moderators` using the SQL in the README. Report review stays locked
    until this is done, which is safe but non-functional.
-7. **Vercel.** Confirm the project points at this repository and branch, and
+8. **Vercel.** Confirm the project points at this repository and branch, and
    that both `NEXT_PUBLIC_SUPABASE_*` variables are set for Production and
    Preview. Environment changes need a new deployment to take effect.
 

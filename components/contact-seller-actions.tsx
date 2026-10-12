@@ -3,61 +3,86 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { getBrowserSupabaseClient } from "@/lib/supabase/browser-client";
+import { Button, buttonClass } from "@/components/ui";
 
 type ContactSellerActionsProps = {
-  email?: string | null;
+  listingId: string;
   title: string;
 };
 
-export function ContactSellerActions({ email, title }: ContactSellerActionsProps) {
+// The seller's email is deliberately absent from the public page payload, so it
+// is fetched here with the viewer's own session. A signed-out visitor never
+// receives it, in the API response or in the server-rendered HTML.
+export function ContactSellerActions({ listingId, title }: ContactSellerActionsProps) {
   const [copied, setCopied] = useState(false);
-  const [isCheckingSession, setIsCheckingSession] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [isSignedIn, setIsSignedIn] = useState(false);
+  const [email, setEmail] = useState<string | null>(null);
 
   useEffect(() => {
     let isMounted = true;
-    const supabase = getBrowserSupabaseClient();
 
-    supabase.auth.getSession().then(({ data }) => {
-      if (isMounted) {
-        setIsSignedIn(Boolean(data.session?.user));
-        setIsCheckingSession(false);
+    async function loadSellerContact() {
+      try {
+        const supabase = getBrowserSupabaseClient();
+        const {
+          data: { session }
+        } = await supabase.auth.getSession();
+
+        if (!session?.user) {
+          if (isMounted) {
+            setIsSignedIn(false);
+            setIsLoading(false);
+          }
+          return;
+        }
+
+        const { data } = await supabase
+          .from("listings")
+          .select("seller_email")
+          .eq("id", listingId)
+          .maybeSingle();
+
+        if (isMounted) {
+          setIsSignedIn(true);
+          setEmail(data?.seller_email ?? null);
+          setIsLoading(false);
+        }
+      } catch {
+        if (isMounted) {
+          setIsSignedIn(false);
+          setIsLoading(false);
+        }
       }
-    }).catch(() => {
-      if (isMounted) {
-        setIsSignedIn(false);
-        setIsCheckingSession(false);
-      }
-    });
+    }
+
+    void loadSellerContact();
 
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [listingId]);
 
-  if (isCheckingSession) {
+  if (isLoading) {
     return (
-      <p className="mt-5 flex min-h-12 w-full items-center justify-center rounded-ctl bg-campus-paper px-6 text-sm font-semibold text-campus-muted">
-        Checking seller contact...
+      <p className="flex min-h-11 items-center text-sm text-campus-muted" role="status">
+        Checking seller contact
       </p>
     );
   }
 
   if (!isSignedIn) {
     return (
-      <Link
-        className="mt-5 flex min-h-12 w-full items-center justify-center rounded-ctl bg-campus-paper px-6 text-sm font-bold text-campus-ink transition hover:bg-campus-surface"
-        href="/login"
-      >
-        Sign in to view seller contact info
+      <Link className={buttonClass("secondary", "md", "w-full")} href="/login">
+        Sign in to view seller contact
       </Link>
     );
   }
 
   if (!email) {
     return (
-      <p className="mt-5 flex min-h-12 w-full items-center justify-center rounded-ctl bg-campus-paper px-6 text-sm font-semibold text-campus-muted">
-        Seller email not available.
+      <p className="text-sm text-campus-muted">
+        This seller has no email on file. Use Message Seller instead.
       </p>
     );
   }
@@ -72,24 +97,18 @@ export function ContactSellerActions({ email, title }: ContactSellerActionsProps
   }
 
   return (
-    <div className="mt-5 space-y-3">
+    <div className="space-y-2">
       <a
-        className="flex min-h-12 w-full items-center justify-center rounded-ctl bg-campus-brand px-6 text-sm font-bold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-campus-brandHover hover:shadow-md"
+        className={buttonClass("secondary", "md", "w-full")}
         href={`mailto:${email}?subject=${encodeURIComponent(
           `Interested in your DormLoot listing: ${title}`
-        )}&body=${encodeURIComponent(
-          `Hi, I'm interested in your listing "${title}" on DormLoot.`
-        )}`}
+        )}&body=${encodeURIComponent(`Hi, I'm interested in your listing "${title}" on DormLoot.`)}`}
       >
-        Contact seller
+        Email seller
       </a>
-      <button
-        className="min-h-11 w-full rounded-ctl border border-campus-border bg-campus-paper px-5 text-sm font-bold text-campus-ink transition hover:bg-campus-surface"
-        onClick={copyEmail}
-        type="button"
-      >
-        {copied ? "Copied!" : "Copy email"}
-      </button>
+      <Button className="w-full" onClick={copyEmail} size="sm" type="button" variant="ghost">
+        {copied ? "Copied" : "Copy email address"}
+      </Button>
     </div>
   );
 }
