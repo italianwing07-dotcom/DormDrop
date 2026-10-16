@@ -9,6 +9,7 @@ export default function TermsPage() {
         <p>Prohibited items and conduct include illegal or unsafe goods, fraud, harassment, impersonation, spam, academic misconduct, and attempts to bypass account or safety controls.</p>
         <p>DormLoot may remove content, restrict accounts, preserve evidence, and cooperate with appropriate authorities when reasonably necessary to protect users or the service.</p>
         <p>The service is provided as available. Transactions are between users, and DormLoot cannot guarantee listing accuracy, item condition, payment, pickup, or user conduct.</p>
+        <p>Questions about these terms, your account, or your data go to <a className="font-semibold text-campus-brand underline" href="mailto:dormloot.support@gmail.com">dormloot.support@gmail.com</a>.</p>
       </div>
     </main>
   );
