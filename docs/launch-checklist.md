@@ -96,6 +96,15 @@ it afterwards; do not leave test items among real inventory.
    Browse, Profile and Saved listings. Check the old URL shows the unavailable
    state.
 
+## Support inbox
+
+`dormloot.support@gmail.com` is the published contact, shown on the Privacy,
+Terms and Safety pages and in the removal notice on a moderated listing. Keep it
+monitored once students are invited: account access, missing photos, failed
+messages and takedown requests all arrive there. The Safety page states plainly
+that reports are read by a student rather than a staffed support desk, so the
+promise matches what you can actually provide.
+
 ## Real launch inventory
 
 Collect 5 to 10 real available items before inviting the first group. Each owner

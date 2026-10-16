@@ -449,7 +449,7 @@ export function ProfileContent() {
                       {hiddenIds.has(listing.id) ? (
                         <p className="rounded-ctl bg-campus-dangerBg px-3 py-2 text-xs leading-relaxed text-campus-ink">
                           Removed after review. Contact{" "}
-                          <a className="underline" href="mailto:dormdrop.support@gmail.com">
+                          <a className="underline" href="mailto:dormloot.support@gmail.com">
                             support
                           </a>{" "}
                           with any questions.
