@@ -45,7 +45,7 @@ function loadModule(relativePath, overrides = {}) {
       name.startsWith("@phosphor-icons/react")
         ? mocks["@phosphor-icons/react"]
         : (mocks[name] ?? require(name)),
-    window, FormData, Error, console
+    window, FormData, Error, console, URLSearchParams
   }, { filename });
   return module.exports;
 }
@@ -141,10 +141,35 @@ test("an expired link cannot reuse an existing signed-in session", async () => {
   auth.initialize = async () => ({ error: new Error("expired link") });
   auth.getUser = async () => { throw new Error("must not inspect a stale session"); };
   await mount("components/reset-password-form.tsx", "ResetPasswordForm");
-  assert.match(document.querySelector('[role="alert"]').textContent, /invalid or has expired/);
+  assert.match(document.querySelector('[role="alert"]').textContent, /expired/i);
   assert.equal(document.querySelector('input[type="password"]'), null);
   assert.equal(window.location.hash, "");
   assert.equal(document.querySelector('a[href="/forgot-password"]').textContent, "Request a new reset link");
+});
+
+test("a failed link says why, and direct navigation says what to do instead", async () => {
+  // Expired link: Supabase reports the reason in the URL fragment.
+  window.history.replaceState({}, "", "/reset-password#error=access_denied&error_code=otp_expired");
+  auth.initialize = async () => ({ error: new Error("expired link") });
+  await mount("components/reset-password-form.tsx", "ResetPasswordForm");
+  assert.match(document.querySelector('[role="alert"]').textContent, /expired/i);
+  assert.match(document.querySelector('[role="alert"]').textContent, /request a new one/i);
+  await act(async () => root.unmount());
+  root = createRoot(document.getElementById("root"));
+
+  // Used link: an error with no otp_expired code names the likely cause.
+  window.history.replaceState({}, "", "/reset-password#error=access_denied&error_code=flow_state_not_found");
+  await mount("components/reset-password-form.tsx", "ResetPasswordForm");
+  assert.match(document.querySelector('[role="alert"]').textContent, /already have been used/i);
+  await act(async () => root.unmount());
+  root = createRoot(document.getElementById("root"));
+
+  // No link at all: tell the student to start from the email.
+  window.history.replaceState({}, "", "/reset-password");
+  auth.getUser = async () => ({ data: { user: null }, error: null });
+  auth.initialize = async () => ({ error: null });
+  await mount("components/reset-password-form.tsx", "ResetPasswordForm");
+  assert.match(document.querySelector('[role="alert"]').textContent, /Open the reset link from your email/i);
 });
 
 test("visiting the reset page without a session never enables password entry", async () => {
